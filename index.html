@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>GES TEKLİF v3.1 — Solar EPC Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --pr:#2563eb;--pr-l:#dbeafe;--pr-d:#1d4ed8;
+  --gr:#10b981;--gr-l:#d1fae5;
+  --re:#ef4444;--re-l:#fee2e2;
+  --am:#f59e0b;--am-l:#fef3c7;
+  --pu:#8b5cf6;--pu-l:#ede9fe;
+  --bg:#f1f5f9;--bg2:#fff;--bg3:#f8fafc;
+  --bd:#e2e8f0;--bd2:#cbd5e1;
+  --tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;
+  --sw:224px;--r:10px;--rs:6px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:13px;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+
+/* ── AUTH ── */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eff6ff,#f0fdf4,#fefce8);position:relative;overflow:hidden;}
+.ab{position:absolute;border-radius:50%;filter:blur(60px);opacity:.18;}
+.ab.b1{width:400px;height:400px;background:var(--pr);top:-100px;right:-80px;}
+.ab.b2{width:300px;height:300px;background:var(--gr);bottom:-80px;left:-60px;}
+.auth-card{position:relative;z-index:2;background:#fff;border:1px solid var(--bd);border-radius:20px;padding:40px;width:400px;box-shadow:var(--shm);}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.aico{width:40px;height:40px;background:linear-gradient(135deg,var(--pr),#60a5fa);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.atit{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;}
+.asub{color:var(--tx3);font-size:12px;margin-bottom:28px;padding-left:50px;}
+.ath{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:18px;margin-bottom:20px;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.fg label{font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.4px;}
+.fg input{background:var(--bg3);border:1.5px solid var(--bd);border-radius:var(--rs);padding:10px 12px;color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:all .2s;}
+.fg input:focus{border-color:var(--pr);background:#fff;box-shadow:0 0 0 3px var(--pr-l);}
+.auth-err{color:var(--re);font-size:11px;min-height:16px;margin-bottom:4px;}
+.btn-auth{width:100%;padding:12px;background:linear-gradient(135deg,var(--pr),#3b82f6);color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.btn-auth:hover{box-shadow:0 4px 12px rgba(37,99,235,.3);transform:translateY(-1px);}
+.btn-auth-g{width:100%;padding:10px;background:transparent;color:var(--pr);border:1.5px solid var(--pr-l);border-radius:var(--rs);font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-auth-g:hover{background:var(--pr-l);}
+
+/* ── LAYOUT ── */
+#main-app{display:flex;min-height:100vh;}
+.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sb-head{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.sb-ico{width:34px;height:34px;background:linear-gradient(135deg,var(--pr),#60a5fa);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.sb-ttl{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;}
+.sb-nav{flex:1;padding:10px 8px;}
+.sb-sec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;padding:8px 10px 3px;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);background:none;border:none;color:var(--tx2);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
+.ni:hover{background:var(--bg);color:var(--tx);}
+.ni.active{background:var(--pr-l);color:var(--pr);font-weight:600;}
+.nico{font-size:15px;flex-shrink:0;width:18px;text-align:center;}
+.sb-foot{padding:14px;border-top:1px solid var(--bd);flex-shrink:0;}
+.sb-foot label{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px;}
+.sb-foot select{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--rs);padding:7px 9px;color:var(--tx);font-size:12px;outline:none;margin-bottom:7px;}
+.btn-np{width:100%;background:transparent;border:1.5px dashed var(--bd2);border-radius:var(--rs);padding:6px;color:var(--tx3);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.btn-np:hover{border-color:var(--pr);color:var(--pr);}
+.ur{display:flex;align-items:center;justify-content:space-between;}
+#uemail{font-size:10px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;}
+.btn-so{background:none;border:none;color:var(--tx3);font-size:11px;cursor:pointer;}
+.btn-so:hover{color:var(--re);}
+.mc{margin-left:var(--sw);flex:1;padding:24px 28px;min-height:100vh;background:var(--bg);}
+.page{display:none;}
+.page.active{display:block;}
+.ph{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+.ph h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.3px;}
+.ph-sub{color:var(--tx3);font-size:12px;font-family:monospace;}
+.pa{display:flex;gap:7px;margin-left:auto;flex-wrap:wrap;}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 14px;border-radius:var(--rs);font-family:'Inter',sans-serif;font-weight:600;font-size:12px;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-p{background:var(--pr);color:#fff;}.btn-p:hover{background:var(--pr-d);}
+.btn-s{background:#fff;color:var(--tx);border:1.5px solid var(--bd);}.btn-s:hover{border-color:var(--pr);color:var(--pr);}
+.btn-g{background:transparent;color:var(--tx2);border:1px solid var(--bd);}.btn-g:hover{border-color:var(--pr);color:var(--pr);}
+.btn-d{background:var(--re-l);color:var(--re);font-size:11px;padding:3px 7px;}.btn-d:hover{background:var(--re);color:#fff;}
+.btn-sm{padding:4px 9px;font-size:11px;}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh);}
+.card-t{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+
+/* ── KPI ── */
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.kb::after{background:linear-gradient(90deg,var(--pr),#60a5fa);}
+.kpi.kg::after{background:linear-gradient(90deg,var(--gr),#34d399);}
+.kpi.ka::after{background:linear-gradient(90deg,var(--am),#fcd34d);}
+.kpi.kp::after{background:linear-gradient(90deg,var(--pu),#a78bfa);}
+.kl{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.kv{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;line-height:1.2;}
+.ks{font-size:11px;color:var(--tx3);margin-top:3px;}
+.kwp{font-size:10px;color:var(--tx3);margin-top:2px;font-style:italic;}
+
+/* ── DASH GRID ── */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.dg-f{grid-column:1/-1;}
+
+/* ── ICMAL TABLE ── */
+.icmal{width:100%;border-collapse:collapse;font-size:12px;}
+.icmal th{padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;background:var(--bg3);border-bottom:1px solid var(--bd);}
+.icmal th:first-child,.icmal th:nth-child(2){text-align:left;}
+.icmal td{padding:4px 8px;border-bottom:1px solid #f1f5f9;text-align:right;vertical-align:middle;}
+.icmal td:first-child,.icmal td:nth-child(2){text-align:left;}
+.icmal .ra{background:rgba(37,99,235,.04);}
+.icmal .rb{background:rgba(139,92,246,.04);}
+.icmal .rsub{background:var(--bg3);font-weight:700;}
+.icmal .rtot{background:#1e3a5f;}
+.icmal .rtot td{color:#fff!important;}
+.iwp{display:block;font-size:10px;color:var(--tx3);font-style:italic;}
+.rtot .iwp{color:rgba(255,255,255,.65)!important;}
+
+/* ── CRIT OPTS ── */
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.cgh{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.copt{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);cursor:pointer;transition:all .15s;margin-bottom:5px;}
+.copt:hover{border-color:var(--pr);background:var(--pr-l);}
+.copt.sel{border-color:var(--pr);background:var(--pr-l);}
+.cdot{width:9px;height:9px;border-radius:50%;border:2px solid var(--bd2);flex-shrink:0;}
+.copt.sel .cdot{background:var(--pr);border-color:var(--pr);}
+.cname{font-size:12px;font-weight:500;flex:1;}
+.cprice{font-size:11px;font-weight:700;color:var(--pr);}
+
+/* ── ACCORDION ── */
+.acc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);margin-bottom:7px;overflow:hidden;box-shadow:var(--sh);}
+.ach{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;transition:background .15s;}
+.ach:hover{background:var(--bg3);}
+.aarr{font-size:10px;color:var(--tx3);transition:transform .2s;flex-shrink:0;}
+.acc.open .aarr{transform:rotate(90deg);}
+.acode{font-size:11px;font-weight:700;color:var(--pr);font-family:monospace;min-width:42px;}
+.aname{font-weight:600;font-size:13px;flex:1;}
+.acc-ka .acode{color:#1d4ed8;}
+.acc-ka .ach{border-left:3px solid #1d4ed8;}
+.acc-kb .acode{color:#7c3aed;}
+.acc-kb .ach{border-left:3px solid #7c3aed;}
+.acc-ka .acc-grp-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:13px;color:#1d4ed8;}
+.acc-kb .acc-grp-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:13px;color:#7c3aed;}
+.atot{font-size:12px;font-weight:700;color:var(--gr);}
+.awp{font-size:10px;color:var(--tx3);}
+.abody{display:none;border-top:1px solid var(--bd);}
+.acc.open .abody{display:block;}
+
+/* ── DATA TABLE ── */
+.dt{width:100%;border-collapse:collapse;font-size:12px;}
+.dt th{padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;background:var(--bg3);border-bottom:1px solid var(--bd);white-space:nowrap;}
+.dt td{padding:6px 8px;border-bottom:1px solid #f0f4f8;vertical-align:middle;min-height:34px;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:#fafcff;}
+.tdc{font-family:monospace;font-size:10px;color:var(--tx3);}
+.tdb{color:var(--tx3);font-size:11px;}
+.tdt{font-weight:700;color:var(--gr);font-variant-numeric:tabular-nums;}
+.tdwp{font-size:10px;color:var(--tx3);display:block;font-style:italic;}
+.ii{background:transparent;border:none;border-bottom:1.5px solid transparent;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;outline:none;padding:4px 4px;transition:border-color .15s;box-sizing:border-box;}
+.ii-ta{background:transparent;border:none;border-bottom:1.5px solid transparent;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;outline:none;padding:4px 4px;transition:border-color .15s;box-sizing:border-box;display:block;width:100%;line-height:1.45;overflow:auto;word-break:break-word;white-space:pre-wrap;}
+.ii-ta:focus{border-bottom-color:var(--pr);}
+.ii:hover,.ii-ta:hover{border-bottom-color:var(--bd);}
+.ii.wrap{width:100%;white-space:normal;word-break:break-word;min-width:0;}
+.dt td.wrap-cell{white-space:normal;word-break:break-word;vertical-align:middle;padding:5px 8px;}
+.dt td.wrap-cell input{display:block;width:100%;min-width:0;white-space:normal;word-break:break-word;line-height:1.4;padding:3px 4px;}
+.ii:focus{border-bottom-color:var(--pr);background:rgba(37,99,235,.04);border-radius:3px 3px 0 0;}
+
+/* ── CURRENCY ── */
+.cw{display:flex;align-items:center;gap:4px;}
+.csel{background:var(--bg3);border:1px solid var(--bd);border-radius:3px;padding:2px 5px;font-size:11px;font-weight:600;color:var(--pr);outline:none;cursor:pointer;}
+.ueq{font-size:10px;color:var(--tx3);}
+
+/* ── TOTALS ── */
+.tot-bar{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:16px 20px;margin-top:14px;box-shadow:var(--sh);}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.tl{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.tv{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;}
+.twp{font-size:10px;color:var(--tx3);margin-top:2px;font-style:italic;}
+
+/* ── CASH FLOW ── */
+.cstat{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
+.cs{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);}
+.csl{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
+.csv{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;}
+.csv.pos{color:var(--gr);}
+.csv.neg{color:var(--re);}
+.chartc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh);margin-bottom:14px;}
+.chartc canvas{max-height:260px;}
+.pos{color:var(--gr)!important;font-weight:600;}
+.neg{color:var(--re)!important;font-weight:600;}
+
+/* ── TIMELINE ── */
+.tli{padding:10px 14px;background:#fff;border-radius:var(--rs);border-left:3px solid var(--am);border:1px solid var(--bd);margin-bottom:14px;font-size:12px;color:var(--tx3);}
+.tlw{overflow-x:auto;}
+.tlt{min-width:900px;width:100%;border-collapse:collapse;font-size:11px;}
+.tlt th{padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;border-bottom:1px solid var(--bd);background:var(--bg3);}
+.tlt th:first-child,.tlt th:nth-child(2){text-align:left;}
+.tlt td{padding:5px 7px;border-bottom:1px solid #f1f5f9;text-align:center;}
+.tlt td:first-child{text-align:left;font-weight:500;}
+.tlinp{width:50px;background:var(--bg3);border:1px solid var(--bd);border-radius:3px;padding:3px 5px;text-align:center;outline:none;font-size:11px;font-family:monospace;}
+.tlinp:focus{border-color:var(--pr);}
+.tlb{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}
+.tlb.tin{background:var(--gr-l);color:var(--gr);}
+.tlb.tout{background:var(--re-l);color:var(--re);}
+
+/* ── DOR ── */
+.dsel{background:var(--bg3);border:1px solid var(--bd);border-radius:4px;padding:2px 4px;font-size:10px;font-weight:700;outline:none;cursor:pointer;width:100%;text-align:center;}
+.dsel.yuk{background:var(--gr-l);color:var(--gr);border-color:var(--gr);}
+.dsel.isv{background:var(--pr-l);color:var(--pr);border-color:var(--pr);}
+.dsel.pay{background:var(--am-l);color:#d97706;border-color:var(--am);}
+.dsel.yok{color:var(--tx3);}
+.dinp{background:transparent;border:none;border-bottom:1px solid var(--bd);color:var(--tx2);font-size:12px;width:100%;padding:2px 3px;outline:none;}
+
+/* ── SETTINGS ── */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.ssec{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:20px;box-shadow:var(--sh);}
+.ssec.fc{grid-column:1/-1;}
+.ssec h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bd);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.sinp{width:100%;background:var(--bg3);border:1.5px solid var(--bd);border-radius:var(--rs);padding:8px 10px;color:var(--tx);font-family:'Inter',sans-serif;font-size:12px;outline:none;transition:all .2s;}
+.sinp:focus{border-color:var(--pr);background:#fff;}
+.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.ag label{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;}
+.ai{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:5px;}
+.ai input[type=text]{flex:1;background:transparent;border:none;color:var(--tx);font-size:12px;outline:none;}
+.ai input[type=number]{width:75px;background:transparent;border:none;color:var(--pr);font-size:12px;outline:none;text-align:right;font-weight:600;}
+.adel{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;}
+.adel:hover{background:var(--re-l);color:var(--re);}
+.nei{display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid var(--bd);}
+.nen{font-size:11px;font-weight:600;color:var(--tx3);min-width:18px;padding-top:2px;}
+.nei textarea{flex:1;background:transparent;border:none;color:var(--tx2);font-size:12px;resize:none;outline:none;min-height:32px;font-family:'Inter',sans-serif;}
+.nedel{background:none;border:none;color:var(--tx3);cursor:pointer;padding:2px;}
+.nedel:hover{color:var(--re);}
+
+/* ── MODAL ── */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.mc2{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;box-shadow:var(--shm);}
+.mt{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;margin-bottom:18px;}
+.ma{display:flex;gap:7px;margin-top:18px;justify-content:flex-end;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:#fff;border:1px solid var(--bd);border-radius:var(--rs);padding:10px 16px;font-size:12px;z-index:9999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;box-shadow:var(--shm);font-weight:500;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{border-color:var(--gr);color:var(--gr);}
+.toast.error{border-color:var(--re);color:var(--re);}
+
+/* ── INFO ── */
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.ii2{display:flex;gap:6px;padding:5px 0;}
+.il{font-size:11px;color:var(--tx3);min-width:90px;}
+.iv{font-size:11px;color:var(--tx);font-weight:600;}
+.nl{display:flex;flex-direction:column;gap:5px;}
+.ni2{display:flex;gap:7px;font-size:11px;color:var(--tx2);padding:5px 0;border-bottom:1px solid var(--bg3);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1200px){.krow{grid-template-columns:repeat(2,1fr);}.dg{grid-template-columns:1fr;}.cstat{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.sgrid{grid-template-columns:1fr;}.agrid{grid-template-columns:1fr;}}
+
+/* ─── WIZARD MODAL ─── */
+#wiz-modal{position:fixed;inset:0;background:rgba(15,23,42,.65);backdrop-filter:blur(4px);z-index:3000;display:flex;align-items:center;justify-content:center;}
+#wiz-modal[style*="none"]{display:none!important;}
+.wiz-box{background:#fff;border-radius:18px;width:680px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.22);}
+.wiz-top{background:linear-gradient(135deg,#1d4ed8,#3b82f6);padding:20px 24px;color:#fff;flex-shrink:0;}
+.wiz-top h2{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;margin-bottom:3px;}
+.wiz-top p{font-size:12px;opacity:.82;}
+.wiz-scroll{padding:20px 24px;overflow-y:auto;flex:1;}
+.wiz-scroll h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:#2563eb;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:6px;}
+.wiz-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px;}
+.wiz-grid.c3{grid-template-columns:1fr 1fr 1fr;}
+.wf{display:flex;flex-direction:column;gap:4px;}
+.wf label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;}
+.wf input,.wf select{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:6px;padding:8px 10px;color:#0f172a;font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%;}
+.wf input:focus,.wf select:focus{border-color:#2563eb;background:#fff;}
+.wf input[readonly]{background:#d1fae5;border-color:#10b981;color:#065f46;font-weight:700;cursor:default;}
+.wf .hint{font-size:10px;color:#94a3b8;margin-top:2px;}
+.wiz-bot{padding:14px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;background:#fff;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── AUTH ── -->
+<div id="auth-screen" class="auth-screen">
+  <div class="ab b1"></div><div class="ab b2"></div>
+  <div class="auth-card">
+    <div class="auth-logo"><div class="aico">☀</div><div class="atit">GES TEKLİF</div></div>
+    <div class="asub">Solar EPC Teklif Yönetim Platformu</div>
+    <div class="ath" id="aml">Giriş Yap</div>
+    <div class="fg" id="ng" style="display:none"><label>Ad Soyad</label><input type="text" id="aname" placeholder="Ad Soyad"/></div>
+    <div class="fg"><label>E-Posta</label><input type="email" id="aemail" placeholder="ornek@firma.com"/></div>
+    <div class="fg"><label>Şifre</label><input type="password" id="apass" placeholder="En az 6 karakter"/></div>
+    <div id="aerr" class="auth-err"></div>
+    <button class="btn-auth" id="asub">Giriş Yap</button>
+    <button class="btn-auth-g" id="atog">Hesabın yok mu? Kayıt ol</button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="main-app" style="display:none">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-ico">☀</div>
+      <span class="sb-ttl">GES TEKLİF</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Ana Sayfalar</div>
+      <button class="ni active" data-page="dashboard"><span class="nico">📊</span>Dashboard</button>
+      <button class="ni" data-page="kesif"><span class="nico">📋</span>Keşif-A</button>
+      <button class="ni" data-page="kesifb"><span class="nico">📑</span>Keşif-B</button>
+      <button class="ni" data-page="boq"><span class="nico">📄</span>BoQ</button>
+      <div class="sb-sec">Finansal</div>
+      <button class="ni" data-page="cashflow"><span class="nico">💹</span>Cash Flow</button>
+      <button class="ni" data-page="timeline"><span class="nico">📅</span>CF Timeline</button>
+      <div class="sb-sec">Yönetim</div>
+      <button class="ni" data-page="dor"><span class="nico">✅</span>DoR</button>
+      <button class="ni" data-page="settings"><span class="nico">⚙️</span>Teklif Ayarları</button>
+    </nav>
+    <div class="sb-foot">
+      <label>Aktif Teklif</label>
+      <select id="psel"></select>
+      <button class="btn-np" id="npbtn">＋ Yeni Teklif</button>
+      <div class="ur">
+        <span id="uemail"></span>
+        <button class="btn-so" id="sobtn">Çıkış</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="mc">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="ph">
+        <div><h1>Dashboard</h1><div id="dtitle" style="font-size:15px;font-weight:800;color:var(--tx);margin-top:3px;font-family:'Plus Jakarta Sans',sans-serif;">—</div></div>
+        <div class="pa"><button class="btn btn-s" onclick="printDash()">🖨 PDF Çıktı</button></div>
+      </div>
+      <div class="krow">
+        <div class="kpi kb"><div class="kl">DC Güç / AC Güç</div><div class="kv" id="d-guc">—</div><div class="ks" id="d-usdmwp">—</div></div>
+        <div class="kpi kp"><div class="kl">Toplam Maliyet</div><div class="kv" id="d-mal">—</div><div class="ks" id="d-mal-s">—</div><div class="kwp" id="d-mal-wp">—</div></div>
+        <div class="kpi ka"><div class="kl">Brüt Kâr</div><div class="kv" id="d-kar">—</div><div class="ks" id="d-kar-pct">—</div><div class="kwp" id="d-kar-wp">—</div></div>
+        <div class="kpi kg" style="border:2px solid #10b981;background:linear-gradient(135deg,#f0fdf4,#dcfce7);"><div class="kl" style="color:#059669;font-weight:800;font-size:11px;">💰 SATIŞ FİYATI</div><div class="kv" id="d-sat" style="font-size:26px;font-weight:900;color:#059669;">—</div><div id="d-sat-wp" style="font-size:13px;font-weight:800;color:#059669;margin-top:2px;">—</div><div style="display:flex;gap:8px;margin-top:3px;"><span id="d-sat-eur" style="font-size:11px;color:#059669;font-weight:600;">—</span><span id="d-sat-tl" style="font-size:11px;color:#065f46;font-weight:600;">—</span></div></div>
+      </div>
+
+      
+      
+
+            <!-- ── Parametreler (KPI altında sabit) ── -->
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:1.5px solid var(--pr-l);border-radius:var(--r);padding:14px 20px;margin-bottom:18px;box-shadow:var(--sh);">
+        <span style="font-size:13px;font-weight:800;color:var(--pr);white-space:nowrap;font-family:'Plus Jakarta Sans',sans-serif;">⚙ Parametreler</span>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:600;white-space:nowrap;">Contingency %<input type="number" id="d-cont" style="width:52px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:var(--pr);outline:none;" step="0.1"></label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:600;white-space:nowrap;">Overhead Cost %<input type="number" id="d-gg" style="width:52px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:var(--pr);outline:none;" step="0.1"></label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:600;white-space:nowrap;">Net Kâr %<input type="number" id="d-nk" style="width:52px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:var(--pr);outline:none;" step="0.1"></label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:600;white-space:nowrap;">Aylık Kredi Faizi %<input type="number" id="d-faiz" style="width:52px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:var(--re);outline:none;" step="0.01"></label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:600;white-space:nowrap;">Aylık Mevduat %<input type="number" id="d-mev" style="width:52px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:var(--gr);outline:none;" step="0.01"></label>
+        <button class="btn btn-p btn-sm" onclick="applyParams()">✓ Uygula & Kaydet</button>
+        <span id="params-result" style="font-size:11px;color:var(--tx3);"></span>
+      </div>
+      <div class="dg">
+        <!-- Critical Materials -->
+        <div class="dg-f card">
+          <div class="card-t">🎯 Kritik Malzeme Seçimi</div>
+          <div class="cg">
+            <div><div class="cgh">Panel (USD/Wp)</div><div id="cp"></div></div>
+            <div><div class="cgh">Konstrüksiyon (USD/MW)</div><div id="ck"></div></div>
+            <div><div class="cgh">İnverter (USD/adet)</div><div id="ci"></div></div>
+          </div>
+        </div>
+        <!-- CF Chart -->
+        <div class="chartc"><div class="card-t">💹 Cash Flow</div><canvas id="d-cf" height="240"></canvas></div>
+        <!-- Cost Pie -->
+        <div class="chartc"><div class="card-t">🍩 Maliyet Dağılımı</div><canvas id="d-pie" height="240"></canvas></div>
+        <!-- Proje Özeti -->
+        <div class="card"><div class="card-t">📌 Proje Özeti</div><div class="igrid" id="d-info"></div></div>
+        <!-- Notlar -->
+        
+        <!-- İcmal + Notlar side by side -->
+        <div class="dg-f" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div class="card">
+            <div class="card-t">📊 Teklif İcmal Tablosu</div>
+            <div style="overflow-x:auto"><table class="icmal" id="icmal-tbl" style="width:100%"></table></div>
+          </div>
+          <div class="card" style="position:sticky;top:20px;">
+            <div class="card-t">📝 Teklif Notları</div>
+            <div class="nl" id="d-notes-side"></div>
+            <div id="d-risks-section" style="display:none;margin-top:14px;border-top:1px solid var(--bd);padding-top:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--re);margin-bottom:8px;display:flex;align-items:center;gap:5px;">⚠ Olası Riskler</div>
+              <div class="nl" id="d-risks-side"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KESİF-A -->
+    <div class="page" id="page-kesif">
+      <div class="ph">
+        <h1>Keşif-A — Direkt Maliyetler</h1>
+        <div class="pa">
+          <button class="btn btn-s" onclick="exportKA()">📊 Excel</button>
+          <button class="btn btn-s" onclick="printKA()">🖨 PDF</button>
+          <button class="btn btn-s" id="ka-save">💾 Kaydet</button>
+        </div>
+      </div>
+      <div id="ka-cont"></div>
+      <div id="ka-tots" class="tot-bar" style="display:none;"></div>
+    </div>
+
+    <!-- KESİF-B -->
+    <div class="page" id="page-kesifb">
+      <div class="ph">
+        <h1>Keşif-B — Endirekt Giderler</h1>
+        <div class="pa"><button class="btn btn-s" id="kb-save">💾 Kaydet</button></div>
+      </div>
+      <div id="kb-cont"></div>
+      <div id="kb-tots" class="tot-bar" style="display:none;"></div>
+    </div>
+
+    <!-- BOQ -->
+    <div class="page" id="page-boq">
+      <div class="ph"><h1>BoQ — Malzeme Listesi</h1><div class="pa"><button class="btn btn-p" onclick="printBoQ()">🖨 PDF</button></div></div>
+      <div id="boq-cont"></div>
+    </div>
+
+    <!-- CASH FLOW -->
+    <div class="page" id="page-cashflow">
+      <div class="ph"><h1>Cash Flow Analizi</h1></div>
+      <div class="cstat" id="cf-stat"></div>
+      <div class="chartc"><canvas id="cf-bar"></canvas></div>
+      <div class="chartc"><canvas id="cf-cum"></canvas></div>
+      <div class="card" style="margin-top:14px"><div class="card-t">📊 Aylık Detay</div><div id="cf-tbl"></div></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="page" id="page-timeline">
+      <div class="ph"><h1>CF Timeline</h1><div class="pa"><button class="btn btn-s" id="tl-save">💾 Kaydet</button></div></div>
+      <div class="tli">Aylık ödeme/tahsilat oranlarını girin (0.0 → 1.0, toplam = 1.00 = %100)</div>
+      <div id="tl-cont"></div>
+    </div>
+
+    <!-- DOR -->
+    <div class="page" id="page-dor">
+      <div class="ph">
+        <h1>DoR — Kapsam & Sorumluluk</h1>
+        <div class="pa">
+          <button class="btn btn-s" onclick="printDoR()">🖨 PDF</button>
+          <button class="btn btn-s" id="dor-save">💾 Kaydet</button>
+          <button class="btn btn-p" id="dor-add">＋ Kapsam Ekle</button>
+        </div>
+      </div>
+      <div id="dor-cont"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="ph"><h1>Teklif Ayarları</h1><div class="pa"><button class="btn btn-p" id="set-save">💾 Kaydet</button></div></div>
+      <div class="sgrid">
+        <div class="ssec">
+          <h3>Proje Bilgileri</h3>
+          <div class="fr"><div class="fg"><label>İşveren</label><input class="sinp" id="s-isv" type="text"></div><div class="fg"><label>Proje Adı</label><input class="sinp" id="s-prj" type="text"></div></div>
+          <div class="fr"><div class="fg"><label>İl</label><input class="sinp" id="s-il" type="text"></div><div class="fg"><label>İlçe</label><input class="sinp" id="s-ilc" type="text"></div></div>
+          <div class="fr"><div class="fg"><label>DC Güç (MWp)</label><input class="sinp" id="s-dc" type="number"></div><div class="fg"><label>AC Güç (MW)</label><input class="sinp" id="s-ac" type="number"></div></div>
+          <div class="fr"><div class="fg"><label>Panel Gücü (Wp)</label><input class="sinp" id="s-pg" type="number"></div><div class="fg"><label>Panel Adeti</label><input class="sinp" id="s-pa" type="number"></div></div>
+          <div class="fr"><div class="fg"><label>İnverter Gücü (kW)</label><input class="sinp" id="s-ig" type="number"></div><div class="fg"><label>İnverter Adeti</label><input class="sinp" id="s-ia" type="number"></div></div>
+          <div class="fr"><div class="fg"><label>Proje Başlangıcı</label><input class="sinp" id="s-bas" type="date"></div><div class="fg"><label>Yapım Süresi (gün)</label><input class="sinp" id="s-sur" type="number"></div></div>
+          <div class="fr"><div class="fg"><label>Step-Up Trafo Sayısı</label><input class="sinp" id="s-ts" type="number"></div><div class="fg"><label>Çevre Telçit (m)</label><input class="sinp" id="s-cv" type="number"></div></div>
+          <div class="fr"><div class="fg"><label>Proje Alanı (m²)</label><input class="sinp" id="s-al" type="number"></div></div>
+        </div>
+        <div class="ssec">
+          <h3>Kur & Finansal Parametreler</h3>
+          <div class="fr"><div class="fg"><label>USD/TL</label><input class="sinp" id="s-usd" type="number" step="0.01"></div><div class="fg"><label>EUR/TL</label><input class="sinp" id="s-eur" type="number" step="0.01"></div></div>
+          <div style="font-size:11px;color:var(--tx3);padding:6px 0;background:var(--pr-l);border-radius:4px;padding:8px 12px;border-left:3px solid var(--pr);">ℹ Contingency, Genel Gider ve Net Kâr oranları Dashboard → Parametreler bölümünden yönetilir.</div>
+        </div>
+        <div class="ssec fc">
+          <h3>Kritik Malzeme Alternatifleri</h3>
+          <div class="agrid">
+            <div class="ag"><label>Panel (USD/Wp)</label><div id="alt-p"></div><button class="btn btn-g btn-sm" onclick="addAlt('p')">＋ Ekle</button></div>
+            <div class="ag"><label>Konstrüksiyon (USD/MW)</label><div id="alt-k"></div><button class="btn btn-g btn-sm" onclick="addAlt('k')">＋ Ekle</button></div>
+            <div class="ag"><label>İnverter (USD/adet)</label><div id="alt-i"></div><button class="btn btn-g btn-sm" onclick="addAlt('i')">＋ Ekle</button></div>
+          </div>
+        </div>
+        <div class="ssec fc">
+          <h3>Teklif Bilgi Notları</h3>
+          <div id="nc"></div>
+          <button class="btn btn-g btn-sm" id="add-n" style="margin-top:8px">＋ Not Ekle</button>
+          <h3 style="margin-top:20px">Olası Riskler</h3>
+          <div id="rc"></div>
+          <button class="btn btn-g btn-sm" id="add-r" style="margin-top:8px">＋ Risk Ekle</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<div id="wiz-modal" style="display:none">
+  <div class="wiz-box">
+    <div class="wiz-top">
+      <h2>☀ Yeni Teklif Oluştur</h2>
+      <p>Proje bilgilerini girin — Keşif-A miktarları otomatik hesaplanacak</p>
+    </div>
+    <div class="wiz-scroll">
+      <h3>📋 Proje Kimliği</h3>
+      <div class="wiz-grid">
+        <div class="wf"><label>İşveren / Müşteri</label><input type="text" id="w-isv" placeholder="ABC Enerji A.Ş."></div>
+        <div class="wf"><label>Proje / Teklif Adı</label><input type="text" id="w-prj" placeholder="GES Projesi"></div>
+        <div class="wf"><label>İl</label><input type="text" id="w-il" placeholder="Ankara"></div>
+        <div class="wf"><label>İlçe</label><input type="text" id="w-ilc" placeholder="Polatlı"></div>
+      </div>
+      <h3>⚡ Güç Parametreleri</h3>
+      <div class="wiz-grid c3">
+        <div class="wf"><label>DC Güç (MWp)</label><input type="number" id="w-dc" value="1" step="0.1" oninput="wizCalc()"><div class="hint">Kurulu panel gücü toplamı</div></div>
+        <div class="wf"><label>AC Güç (MW)</label><input type="number" id="w-ac" value="1" step="0.1"></div>
+        <div class="wf"><label>Panel Gücü (Wp)</label><input type="number" id="w-pg" value="625" oninput="wizCalc()"></div>
+        <div class="wf"><label>Panel Adeti (otomatik)</label><input type="text" id="w-pa" readonly tabindex="-1"></div>
+        <div class="wf"><label>İnverter Gücü (kW)</label><input type="number" id="w-ig" value="350"></div>
+        <div class="wf"><label>İnverter Adeti</label><input type="number" id="w-ia" value="3" oninput="wizCalc()"></div>
+      </div>
+      <h3>🏗 Saha Bilgileri</h3>
+      <div class="wiz-grid c3">
+        <div class="wf"><label>Step-Up Trafo Sayısı</label><input type="number" id="w-ts" value="1" oninput="wizCalc()"></div>
+        <div class="wf"><label>Çevre Telçit Uzunluğu (m)</label><input type="number" id="w-cv" value="400"></div>
+        <div class="wf"><label>Toplam Proje Alanı (m²)</label><input type="number" id="w-al" value="10000"></div>
+        <div class="wf"><label>Proje Başlangıcı</label><input type="date" id="w-bas" value="2026-01-01"></div>
+        <div class="wf"><label>Yapım Süresi (gün)</label><input type="number" id="w-sur" value="180"></div>
+      </div>
+      <h3>💱 Finansal Parametreler</h3>
+      <div class="wiz-grid c3">
+        <div class="wf"><label>USD / TL Kuru</label><input type="number" id="w-usd" value="43.51" step="0.01"></div>
+        <div class="wf"><label>EUR / TL Kuru</label><input type="number" id="w-eur" value="51.52" step="0.01"></div>
+        <div class="wf"><label>Contingency (%)</label><input type="number" id="w-cont" value="1" step="0.1"></div>
+      </div>
+    </div>
+    <div class="wiz-bot">
+      <button class="btn btn-s" id="wiz-cancel">İptal</button>
+      <button class="btn btn-p" id="wiz-create">✓ Teklif Oluştur & Formülle</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════
+const FB={apiKey:"AIzaSyB-PNOyRomglId1unGWaCdeLBGErfi3F_w",authDomain:"teklif-810fb.firebaseapp.com",projectId:"teklif-810fb",storageBucket:"teklif-810fb.firebasestorage.app",messagingSenderId:"838745308453",appId:"1:838745308453:web:5de8db85f0b6a2c8756ecc"};
+
+// ═══════════════════════════════════════════════════
+// DEFAULT DATA
+// ═══════════════════════════════════════════════════
+const DEF_KA=[
+  {code:"A.1",name:"Panel",items:[{code:"A.1.1",tanim:"Solar Panel",tip:"SPE625-132GGT",marka:"Elin",birim:"Wp",miktar:39000000,birimFiyat:0.185,fiyatCur:"USD",rawFiyat:0.185,notlar:"Resmi teklif 0,174 USD/Wp"}]},
+  {code:"A.2",name:"İnverter Sistemi",items:[
+    {code:"A.2.1",tanim:"String İnverter",tip:"SG350HX",marka:"Sungrow",birim:"adet",miktar:85,birimFiyat:7250,fiyatCur:"USD",rawFiyat:7250,notlar:""},
+    {code:"A.2.2",tanim:"Datalogger",tip:"EMU200A",marka:"Sungrow",birim:"adet",miktar:3,birimFiyat:2308.99,fiyatCur:"USD",rawFiyat:2308.99,notlar:""}]},
+  {code:"A.3",name:"Taşıyıcı Sistem",items:[{code:"A.3.1",tanim:"2 li dikey Magnelis",tip:"Magnelis",marka:"Muhtelif",birim:"MW",miktar:39,birimFiyat:31000,fiyatCur:"USD",rawFiyat:31000,notlar:""}]},
+  {code:"A.4",name:"Kablo - DC - AG - OG - ZA - Topraklama",items:[
+    {code:"A.4.1",tanim:"Panel-İnverter DC Kablo",tip:"1x6 H1Z2Z2-K",marka:"Nexans-Pyrismian",birim:"mt.",miktar:351000,birimFiyat:0.72,fiyatCur:"USD",rawFiyat:0.72,notlar:""},
+    {code:"A.4.5",tanim:"İnverter-Pano AG Kablo",tip:"1x300 NAYY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:30600,birimFiyat:3.8,fiyatCur:"USD",rawFiyat:3.8,notlar:""},
+    {code:"A.4.6",tanim:"Pano-Trafo AG Kablo",tip:"1x300 NA2XH",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:3780,birimFiyat:3.9,fiyatCur:"USD",rawFiyat:3.9,notlar:""},
+    {code:"A.4.7",tanim:"Trafo-OG Hücre OG Kablo",tip:"1x95/16 N2XSY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:252,birimFiyat:18,fiyatCur:"USD",rawFiyat:18,notlar:""},
+    {code:"A.4.8",tanim:"OG Hücre-OG Hücre OG Kablo",tip:"1x300/25 NA2XSY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:10000,birimFiyat:13,fiyatCur:"USD",rawFiyat:13,notlar:""},
+    {code:"A.4.9",tanim:"Trafo Koruma Toprak Kablosu",tip:"1x240 NYAF",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:140,birimFiyat:28.03,fiyatCur:"USD",rawFiyat:28.03,notlar:""},
+    {code:"A.4.10",tanim:"İnverter İşletme Toprak Kablosu",tip:"1x95 NYAF",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:85,birimFiyat:10.37,fiyatCur:"USD",rawFiyat:10.37,notlar:""},
+    {code:"A.4.11",tanim:"İnverter Koruma Toprak Kablosu",tip:"1x50 NYAF",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:85,birimFiyat:5.55,fiyatCur:"USD",rawFiyat:5.55,notlar:""},
+    {code:"A.4.12",tanim:"Masa-Masa Atlama Toprak Kablosu",tip:"1x16 NYAF",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:1300,birimFiyat:1.98,fiyatCur:"USD",rawFiyat:1.98,notlar:""},
+    {code:"A.4.13",tanim:"Aydınlatma Besleme Kablosu",tip:"3x10 NYY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:6480,birimFiyat:2.8,fiyatCur:"USD",rawFiyat:2.8,notlar:""},
+    {code:"A.4.14",tanim:"CCTV Box Besleme Kablosu",tip:"3x2,5 NYY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:6480,birimFiyat:1.25,fiyatCur:"USD",rawFiyat:1.25,notlar:""},
+    {code:"A.4.15",tanim:"CCTV ZA Kablosu",tip:"Cat6",marka:"Nexans",birim:"mt.",miktar:9720,birimFiyat:0.44,fiyatCur:"USD",rawFiyat:0.44,notlar:""},
+    {code:"A.4.16",tanim:"CCTV Fiber Kablo",tip:"24 Core Çelik Zırhlı",marka:"Nexans-Reçber",birim:"mt.",miktar:6000,birimFiyat:1.18,fiyatCur:"USD",rawFiyat:1.18,notlar:""},
+    {code:"A.4.17",tanim:"İnverter Haberleşme Kablosu",tip:"Cat6",marka:"Nexans",birim:"mt.",miktar:7500,birimFiyat:0.44,fiyatCur:"USD",rawFiyat:0.44,notlar:""},
+    {code:"A.4.18",tanim:"Buholz Rölesi Kablosu",tip:"5x2,5 mm NYY",marka:"Öznur-Hasçelik-HES",birim:"mt.",miktar:42,birimFiyat:4.97,fiyatCur:"USD",rawFiyat:4.97,notlar:""}]},
+  {code:"A.5",name:"Bağlantı Elemanları",items:[
+    {code:"A.5.1",tanim:"Dahili OG Başlık 240 CU",tip:"240 CU",marka:"Raychem-Nexans",birim:"Set",miktar:21,birimFiyat:45.97,fiyatCur:"USD",rawFiyat:45.97,notlar:""},
+    {code:"A.5.2",tanim:"Dahili OG Başlık 300 AL",tip:"300 AL",marka:"Raychem-Nexans",birim:"Set",miktar:84,birimFiyat:45.97,fiyatCur:"USD",rawFiyat:45.97,notlar:""},
+    {code:"A.5.3",tanim:"Plugin OG Başlık 240 CU",tip:"240 CU",marka:"Raychem-Nexans",birim:"Set",miktar:21,birimFiyat:195.36,fiyatCur:"USD",rawFiyat:195.36,notlar:""},
+    {code:"A.5.4",tanim:"Kablo Pabucu 300 SKP",tip:"300 SKP",marka:"Şafak",birim:"Set",miktar:1986,birimFiyat:4.6,fiyatCur:"USD",rawFiyat:4.6,notlar:""},
+    {code:"A.5.5",tanim:"Kablo Pabucu 240 SKP",tip:"240 SKP",marka:"Şafak",birim:"Set",miktar:21,birimFiyat:4.14,fiyatCur:"USD",rawFiyat:4.14,notlar:""},
+    {code:"A.5.6",tanim:"Kablo Pabucu 95 SKP",tip:"95 SKP",marka:"Şafak",birim:"Set",miktar:85,birimFiyat:2.07,fiyatCur:"USD",rawFiyat:2.07,notlar:""},
+    {code:"A.5.7",tanim:"Kablo Pabucu 50 SKP",tip:"50 SKP",marka:"Şafak",birim:"Set",miktar:85,birimFiyat:1.04,fiyatCur:"USD",rawFiyat:1.04,notlar:""},
+    {code:"A.5.8",tanim:"Kablo Pabucu 16 SKP",tip:"16 SKP",marka:"Şafak",birim:"Set",miktar:5200,birimFiyat:0.1,fiyatCur:"USD",rawFiyat:0.1,notlar:""},
+    {code:"A.5.9",tanim:"Makaron",tip:"",marka:"Raychem-Nexans",birim:"Set",miktar:1,birimFiyat:3000,fiyatCur:"USD",rawFiyat:3000,notlar:""},
+    {code:"A.5.10",tanim:"DC Konnektör EVO2",tip:"EVO2",marka:"Staublli",birim:"Set",miktar:2600,birimFiyat:2.15,fiyatCur:"USD",rawFiyat:2.15,notlar:""},
+    {code:"A.5.11",tanim:"İnverter Altı Kablo Tavası",tip:"SDG h:60",marka:"EAE",birim:"kg",miktar:1530,birimFiyat:2.2,fiyatCur:"USD",rawFiyat:2.2,notlar:""}]},
+  {code:"A.6",name:"Boru - Kum - Bims - Şerit",items:[
+    {code:"A.6.1",tanim:"DC Kablo Yeraltı Borusu",tip:"Q50 HDPE",marka:"Zeybek/Mutlusan",birim:"mt.",miktar:35100,birimFiyat:0.41,fiyatCur:"USD",rawFiyat:0.41,notlar:""},
+    {code:"A.6.2",tanim:"DC Kablo Masa Çıkışı",tip:"Q49 Spiral",marka:"Zeybek/Mutlusan",birim:"mt.",miktar:7800,birimFiyat:1.56,fiyatCur:"USD",rawFiyat:1.56,notlar:""},
+    {code:"A.6.3",tanim:"DC Kablo Masa Atlama",tip:"Q16 Spiral",marka:"Zeybek/Mutlusan",birim:"mt.",miktar:2600,birimFiyat:0.79,fiyatCur:"USD",rawFiyat:0.79,notlar:""},
+    {code:"A.6.4",tanim:"Aydınlatma Borusu",tip:"Q50 HDPE",marka:"Zeybek/Mutlusan",birim:"mt.",miktar:6000,birimFiyat:0.41,fiyatCur:"USD",rawFiyat:0.41,notlar:""},
+    {code:"A.6.5",tanim:"CCTV Borusu",tip:"Q50 HDPE",marka:"Zeybek/Mutlusan",birim:"mt.",miktar:6000,birimFiyat:0.41,fiyatCur:"USD",rawFiyat:0.41,notlar:""},
+    {code:"A.6.6",tanim:"İnverter Haberleşme Borusu",tip:"Q16 Kangal",marka:"Zeybek/Mutlusan",birim:"Ad.",miktar:7500,birimFiyat:0.14,fiyatCur:"USD",rawFiyat:0.14,notlar:""},
+    {code:"A.6.7",tanim:"Q50 Ek Maşonu",tip:"Geçmeli",marka:"Zeybek/Mutlusan",birim:"Ad.",miktar:9420,birimFiyat:0.16,fiyatCur:"USD",rawFiyat:0.16,notlar:""},
+    {code:"A.6.8",tanim:"İnce Elenmiş Mil Kumu",tip:"Dere Kumu",marka:"Muhtelif",birim:"Ton",miktar:4200,birimFiyat:9.2,fiyatCur:"USD",rawFiyat:9.2,notlar:""},
+    {code:"A.6.9",tanim:"Kanal Kapama Bims 20x40",tip:"20x40 cm",marka:"Muhtelif",birim:"Ad.",miktar:122460,birimFiyat:0.26,fiyatCur:"USD",rawFiyat:0.26,notlar:""},
+    {code:"A.6.10",tanim:"Kablo Ayırma Bims 7x14",tip:"7x14 cm",marka:"Muhtelif",birim:"Ad.",miktar:48600,birimFiyat:0.11,fiyatCur:"USD",rawFiyat:0.11,notlar:""},
+    {code:"A.6.11",tanim:"Yeraltı İkaz Şeriti",tip:"TEDAŞ AG-OG",marka:"Muhtelif",birim:"Top.",miktar:250,birimFiyat:40.23,fiyatCur:"USD",rawFiyat:40.23,notlar:""}]},
+  {code:"A.7",name:"OG Hücre - Trafo - Köşk",items:[
+    {code:"A.7.1",tanim:"Yük Ayırıcılı Hat Koruma Hücresi",tip:"",marka:"Schneider",birim:"Ad.",miktar:14,birimFiyat:2200,fiyatCur:"USD",rawFiyat:2200,notlar:""},
+    {code:"A.7.2",tanim:"Kesicili Trafo Koruma Hücresi",tip:"",marka:"Schneider",birim:"Ad.",miktar:7,birimFiyat:7040,fiyatCur:"USD",rawFiyat:7040,notlar:""},
+    {code:"A.7.3",tanim:"Trafo 5.000 kVA AL Sargı",tip:"Çift Sekonderli",marka:"Astor",birim:"Ad.",miktar:7,birimFiyat:54500,fiyatCur:"USD",rawFiyat:54500,notlar:""},
+    {code:"A.7.4",tanim:"Köşk",tip:"2,5x5,35x3,50 m",marka:"Aysan-Astor",birim:"Ad.",miktar:7,birimFiyat:4320,fiyatCur:"USD",rawFiyat:4320,notlar:""},
+    {code:"A.7.5",tanim:"Köşk içi Eldiven-Halı-Sehba",tip:"",marka:"Muhtelif",birim:"Set.",miktar:7,birimFiyat:200,fiyatCur:"USD",rawFiyat:200,notlar:""},
+    {code:"A.7.6",tanim:"Bar24 Bakımsız Akü Redresör",tip:"220VAC/24VDC 26Ah",marka:"Revotek",birim:"Set.",miktar:7,birimFiyat:500,fiyatCur:"USD",rawFiyat:500,notlar:""}]},
+  {code:"A.8",name:"Pano - Kompanzasyon",items:[
+    {code:"A.8.1",tanim:"Saha Dağıtım Panosu",tip:"6 İnverterli",marka:"Kontrolmatik-ABB",birim:"Ad.",miktar:14,birimFiyat:15500,fiyatCur:"USD",rawFiyat:15500,notlar:""},
+    {code:"A.8.2",tanim:"Kompanzasyon Sistemi",tip:"",marka:"Kontrolmatik-ABB",birim:"Ad.",miktar:7,birimFiyat:15501,fiyatCur:"USD",rawFiyat:15501,notlar:""}]},
+  {code:"A.9",name:"Topraklama - Yıldırımdan Korunma",items:[
+    {code:"A.9.1",tanim:"30x3,5 mm2 Galvaniz Şerit",tip:"SDG",marka:"Amper",birim:"mt.",miktar:18000,birimFiyat:0.8,fiyatCur:"USD",rawFiyat:0.8,notlar:""},
+    {code:"A.9.2",tanim:"Şerit Ek Elemanı SDG 4 yol",tip:"SDG 4 yol",marka:"Amper",birim:"Ad.",miktar:360,birimFiyat:0.55,fiyatCur:"USD",rawFiyat:0.55,notlar:""},
+    {code:"A.9.3",tanim:"Topraklama Kazığı Al. Köşebent",tip:"",marka:"",birim:"Ad.",miktar:500,birimFiyat:7.24,fiyatCur:"USD",rawFiyat:7.24,notlar:""},
+    {code:"A.9.4",tanim:"Yıldırımdan Korunma Yönetim Ofis",tip:"Tripod",marka:"Yılkomer",birim:"Ad.",miktar:12,birimFiyat:817.5,fiyatCur:"USD",rawFiyat:817.5,notlar:""}]},
+  {code:"A.10",name:"SCADA",items:[
+    {code:"A.10.1",tanim:"SCADA",tip:"TEİAŞ Uyumlu",marka:"Kontrolmatik",birim:"Ad.",miktar:1,birimFiyat:5000,fiyatCur:"USD",rawFiyat:5000,notlar:"Güçten bağımsız, sabit 1 adet"},
+    {code:"A.10.2",tanim:"Güneş Ölçüm İstasyonu",tip:"Pironometre",marka:"Control-X",birim:"Ad.",miktar:1,birimFiyat:12000,fiyatCur:"USD",rawFiyat:12000,notlar:"Güçten bağımsız, sabit 1 adet"}]},
+  {code:"A.11",name:"Aydınlatma ve CCTV",items:[{code:"A.11.1",tanim:"Aydınlatma ve CCTV (Çevre/50 Set)",tip:"Bullet Kamera + Aydınlatma",marka:"Hıkvision-Dahua",birim:"Set",miktar:1,birimFiyat:1500,fiyatCur:"USD",rawFiyat:1500,notlar:"Telçit uzunluğu / 50 adet set"}]},
+  {code:"A.12",name:"İnşaat İşleri",items:[
+    {code:"B.12.1",tanim:"Hafriyat İşleri (Kapsam Dışı)",tip:"5-10 cm Nebati Sıyırma",marka:"Kontrolmatik",birim:"m2",miktar:1148587,birimFiyat:0,fiyatCur:"USD",rawFiyat:0,notlar:"Kapsam Dışı"},
+    {code:"B.12.2",tanim:"Tel çit",tip:"",marka:"Muhtelif",birim:"mt.",miktar:6000,birimFiyat:21.26,fiyatCur:"USD",rawFiyat:21.26,notlar:""},
+    {code:"B.12.3",tanim:"Trafo Etrafı Panel Çit",tip:"",marka:"Muhtelif",birim:"mt.",miktar:112,birimFiyat:40.23,fiyatCur:"USD",rawFiyat:40.23,notlar:""},
+    {code:"B.12.4",tanim:"Santral Giriş Kapısı",tip:"5 mt motorlu kayar kapı",marka:"Muhtelif",birim:"Ad.",miktar:1,birimFiyat:4481.73,fiyatCur:"USD",rawFiyat:4481.73,notlar:""},
+    {code:"B.12.5",tanim:"İşletme Binası - Tefrişatsız",tip:"200 m2 Prefabrik",marka:"Kontrolmatik",birim:"Set",miktar:1,birimFiyat:57458.06,fiyatCur:"USD",rawFiyat:57458.06,notlar:""},
+    {code:"B.12.6",tanim:"DM Binası",tip:"Prefabrik",marka:"Kontrolmatik",birim:"Set",miktar:1,birimFiyat:80441.28,fiyatCur:"USD",rawFiyat:80441.28,notlar:"Her zaman 1 adet"},
+    {code:"B.12.7",tanim:"Güvenlik Kulübesi 150x150 cm",tip:"150x150 cm",marka:"Muhtelif",birim:"Set",miktar:3,birimFiyat:2872.91,fiyatCur:"USD",rawFiyat:2872.91,notlar:""},
+    {code:"B.12.8",tanim:"Trafo Temelleri Beton Dahil",tip:"Yağ Çukurlu",marka:"Kontrolmatik",birim:"Ad.",miktar:7,birimFiyat:5745.81,fiyatCur:"USD",rawFiyat:5745.81,notlar:""},
+    {code:"B.12.9",tanim:"Mıcır Serilmesi",tip:"Trafo Noktalarına",marka:"Muhtelif",birim:"Ton",miktar:4000,birimFiyat:7.82,fiyatCur:"USD",rawFiyat:7.82,notlar:""},
+    {code:"B.12.10",tanim:"Beton Yol C25",tip:"Giriş-İşl. Binası",marka:"",birim:"m3",miktar:120,birimFiyat:91.94,fiyatCur:"USD",rawFiyat:91.94,notlar:""}]},
+  {code:"A.13",name:"İşçilik - Makine - Ekipman",items:[
+    {code:"A.13.1",tanim:"Elektrik İşçilik Bedeli - İş Makinalı",tip:"",marka:"",birim:"MW",miktar:39,birimFiyat:13789.94,fiyatCur:"USD",rawFiyat:13789.94,notlar:""},
+    {code:"A.13.2",tanim:"Mekanik+Panel İşçilik - İş Makinalı",tip:"Çakım Methodu",marka:"",birim:"MW",miktar:39,birimFiyat:27579.87,fiyatCur:"USD",rawFiyat:27579.87,notlar:""},
+    {code:"A.13.3",tanim:"Aydınlatma-CCTV İşçilik Bedeli - İş Makinalı",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:300,fiyatCur:"USD",rawFiyat:300,notlar:"Çevre/50 set x 300 USD/set"}]},
+  {code:"A.14",name:"Kurum Harçları",items:[
+    {code:"A.14.1",tanim:"Tasarım Dizayn Projelendirme",tip:"",marka:"Kontrolmatik",birim:"Set",miktar:1,birimFiyat:2757.99,fiyatCur:"USD",rawFiyat:2757.99,notlar:""},
+    {code:"A.14.2",tanim:"ETKB Projelendirme Bedeli",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:3447.49,fiyatCur:"USD",rawFiyat:3447.49,notlar:""},
+    {code:"A.14.3",tanim:"ETKB Kabul Bedeli",tip:"",marka:"",birim:"Set",miktar:5,birimFiyat:6894.97,fiyatCur:"USD",rawFiyat:6894.97,notlar:""},
+    {code:"A.14.4",tanim:"İtfaiye Harç Bedeli",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:3000,fiyatCur:"USD",rawFiyat:3000,notlar:"Sabit 1 adet, 3000 USD"}]},
+  {code:"A.15",name:"Etiketleme - KKT - Sarf",items:[
+    {code:"A.15.1",tanim:"Etiketleme",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:4596.65,fiyatCur:"USD",rawFiyat:4596.65,notlar:""},
+    {code:"A.15.2",tanim:"İnverter Yangın Tüpü 5 kg",tip:"",marka:"",birim:"Set",miktar:85,birimFiyat:27.58,fiyatCur:"USD",rawFiyat:27.58,notlar:""},
+    {code:"A.15.3",tanim:"Köşk Yangın Tüpü 25 kg",tip:"",marka:"",birim:"Set",miktar:7,birimFiyat:165.48,fiyatCur:"USD",rawFiyat:165.48,notlar:""},
+    {code:"A.15.4",tanim:"UV Kablo Klips 4,8x368 mm",tip:"4,8x368 mm",marka:"Gwest",birim:"Set",miktar:58500,birimFiyat:0.12,fiyatCur:"USD",rawFiyat:0.12,notlar:""},
+    {code:"A.15.5",tanim:"Menhol 30x30x30 mm",tip:"Komposit",marka:"Komposit Kimya",birim:"Ad.",miktar:120,birimFiyat:26.44,fiyatCur:"USD",rawFiyat:26.44,notlar:""},
+    {code:"A.15.6",tanim:"Akıllı Vida",tip:"",marka:"Muhtelif",birim:"Set",miktar:1,birimFiyat:114.92,fiyatCur:"USD",rawFiyat:114.92,notlar:""},
+    {code:"A.15.7",tanim:"Silikon-Köpük-Elektrik Bandı Sarf",tip:"",marka:"Muhtelif",birim:"Set",miktar:1,birimFiyat:2298.33,fiyatCur:"USD",rawFiyat:2298.33,notlar:""}]},
+  {code:"A.16",name:"Nakliye - Gümrük",items:[
+    {code:"A.16.1",tanim:"Panel Nakliye",tip:"",marka:"",birim:"Set",miktar:91.5,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"A.16.2",tanim:"İnverter Nakliye",tip:"",marka:"",birim:"Set",miktar:5.3,birimFiyat:5,fiyatCur:"USD",rawFiyat:5,notlar:""},
+    {code:"A.16.3",tanim:"Konstrüksiyon Nakliye",tip:"",marka:"",birim:"Set",miktar:54.6,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"A.16.4",tanim:"Aydınlatma-CCTV Nakliye",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:919.33,fiyatCur:"USD",rawFiyat:919.33,notlar:""},
+    {code:"A.16.5",tanim:"Trafo Nakliye",tip:"",marka:"",birim:"Set",miktar:7,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"A.16.6",tanim:"OG Hücre Nakliye",tip:"",marka:"",birim:"Set",miktar:3,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"A.16.7",tanim:"Köşk Nakliye",tip:"",marka:"",birim:"Set",miktar:7,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"A.16.8",tanim:"Kablo Nakliye",tip:"",marka:"",birim:"Set",miktar:8,birimFiyat:919.33,fiyatCur:"USD",rawFiyat:919.33,notlar:""}]},
+  {code:"A.17",name:"Test Devreye Alma",items:[
+    {code:"A.17.1",tanim:"IV Curve Testi",tip:"",marka:"",birim:"MW",miktar:39,birimFiyat:100,fiyatCur:"USD",rawFiyat:100,notlar:""},
+    {code:"A.17.2",tanim:"VLF Testleri",tip:"",marka:"",birim:"Başlık",miktar:228,birimFiyat:34.48,fiyatCur:"USD",rawFiyat:34.48,notlar:""},
+    {code:"A.17.3",tanim:"Pano Testleri",tip:"",marka:"",birim:"Ad.",miktar:14,birimFiyat:114.92,fiyatCur:"USD",rawFiyat:114.92,notlar:""},
+    {code:"A.17.4",tanim:"Kesici-AT-GT-Röle-Bara OG Testler",tip:"",marka:"",birim:"Set",miktar:1,birimFiyat:10000,fiyatCur:"USD",rawFiyat:10000,notlar:""},
+    {code:"A.17.5",tanim:"Trafo Testleri",tip:"",marka:"",birim:"Ad.",miktar:7,birimFiyat:344.75,fiyatCur:"USD",rawFiyat:344.75,notlar:""}]},
+  {code:"A.18",name:"Yedek Malzeme",items:[
+    {code:"A.18.1",tanim:"Solar Panel (Yedek)",tip:"SPE625-132GGT",marka:"Elin",birim:"Wp",miktar:195000,birimFiyat:0.185,fiyatCur:"USD",rawFiyat:0.185,notlar:""},
+    {code:"A.18.2",tanim:"DC Kablo (Yedek)",tip:"1x6 H1Z2Z2-K",marka:"Nexans-Pyrismian",birim:"Mt.",miktar:3510,birimFiyat:0.72,fiyatCur:"USD",rawFiyat:0.72,notlar:""},
+    {code:"A.18.3",tanim:"String İnverter (Yedek)",tip:"SG350HX",marka:"Sungrow",birim:"Set",miktar:5,birimFiyat:7250,fiyatCur:"USD",rawFiyat:7250,notlar:""},
+    {code:"A.18.4",tanim:"DC Konnektör (Yedek)",tip:"EVO2",marka:"Staublli",birim:"Set",miktar:250,birimFiyat:2.15,fiyatCur:"USD",rawFiyat:2.15,notlar:""},
+    {code:"A.18.5",tanim:"Dahili OG Başlık (Yedek)",tip:"240 CU",marka:"Raychem-Nexans",birim:"Set",miktar:50,birimFiyat:45.97,fiyatCur:"USD",rawFiyat:45.97,notlar:""},
+    {code:"A.18.6",tanim:"Plugin OG Başlık (Yedek)",tip:"240 CU",marka:"Raychem-Nexans",birim:"Set",miktar:12,birimFiyat:195.36,fiyatCur:"USD",rawFiyat:195.36,notlar:""},
+    {code:"A.18.7",tanim:"Pabuç (Yedek) 300 SKP",tip:"300 SKP",marka:"Şafak",birim:"Set",miktar:100,birimFiyat:6.9,fiyatCur:"USD",rawFiyat:6.9,notlar:""},
+    {code:"A.18.8",tanim:"İnverter-Pano AG Kablo (Yedek)",tip:"1x300 NAYY",marka:"Öznur-Hasçelik-HES",birim:"Set",miktar:3000,birimFiyat:3.8,fiyatCur:"USD",rawFiyat:3.8,notlar:""},
+    {code:"A.18.9",tanim:"OG Hücre-OG Hücre Kablo (Yedek)",tip:"1x300/25 NA2XSY",marka:"Öznur-Hasçelik-HES",birim:"Set",miktar:3000,birimFiyat:13,fiyatCur:"USD",rawFiyat:13,notlar:""},
+    {code:"A.18.10",tanim:"CCTV ZA Kablo (Yedek)",tip:"Cat6",marka:"Nexans",birim:"Set",miktar:1000,birimFiyat:0.44,fiyatCur:"USD",rawFiyat:0.44,notlar:""},
+    {code:"A.18.11",tanim:"CCTV Fiber Kablo (Yedek)",tip:"24 Core Çelik Zırhlı",marka:"Nexans-Reçber",birim:"Set",miktar:1000,birimFiyat:1.18,fiyatCur:"USD",rawFiyat:1.18,notlar:""}]}
+];
+
+const DEF_KB=[
+  {code:"B.1",name:"Şirket Proje Genel Gider",items:[
+    {code:"B.1.1",tanim:"Mühendis",birim:"AdamAy",miktar:12,birimFiyat:2298.33,fiyatCur:"USD",rawFiyat:2298.33,notlar:"2 Mühendis"},
+    {code:"B.1.2",tanim:"HSE",birim:"AdamAy",miktar:6,birimFiyat:1838.66,fiyatCur:"USD",rawFiyat:1838.66,notlar:"1 C Sınıfı HSE"},
+    {code:"B.1.3",tanim:"Foremen",birim:"AdamAy",miktar:12,birimFiyat:2757.99,fiyatCur:"USD",rawFiyat:2757.99,notlar:"2 Formen"},
+    {code:"B.1.4",tanim:"İşçi",birim:"AdamAy",miktar:12,birimFiyat:1838.66,fiyatCur:"USD",rawFiyat:1838.66,notlar:"2 Depo/Temizlik"},
+    {code:"B.1.5",tanim:"Binek Araç Kiralama Yakıt Dahil",birim:"AraçAy",miktar:12,birimFiyat:2757.99,fiyatCur:"USD",rawFiyat:2757.99,notlar:"2 Araç"},
+    {code:"B.1.6",tanim:"Uçak Bileti",birim:"AdamAy",miktar:24,birimFiyat:137.9,fiyatCur:"USD",rawFiyat:137.9,notlar:""},
+    {code:"B.1.7",tanim:"Mobilizasyon",birim:"Set",miktar:1,birimFiyat:17237.42,fiyatCur:"USD",rawFiyat:17237.42,notlar:""},
+    {code:"B.1.8",tanim:"Aylık Personel Masraf",birim:"AdamAy",miktar:42,birimFiyat:459.67,fiyatCur:"USD",rawFiyat:459.67,notlar:""},
+    {code:"B.1.9",tanim:"Aylık Mobilizasyon Giderleri",birim:"Ay",miktar:6,birimFiyat:2298.33,fiyatCur:"USD",rawFiyat:2298.33,notlar:""}]},
+  {code:"B.2",name:"Garanti Periyodu Masrafları - O&M",items:[
+    {code:"B.2.5",tanim:"Panel Yıkama",birim:"MW",miktar:1,birimFiyat:1500,fiyatCur:"USD",rawFiyat:1500,notlar:"DC Güç (MW) x 1500 USD/MW — dinamik"},
+    {code:"B.2.9",tanim:"Termal Kamera Çekimi",birim:"Sefer",miktar:4,birimFiyat:1000,fiyatCur:"USD",rawFiyat:1000,notlar:"Sabit 1000 USD/sefer"},
+    {code:"B.2.10",tanim:"Elektrik Bakım IV Curve",birim:"MW",miktar:156,birimFiyat:200,fiyatCur:"USD",rawFiyat:200,notlar:""},
+    {code:"B.2.11",tanim:"VLF",birim:"Başlık",miktar:504,birimFiyat:57.46,fiyatCur:"USD",rawFiyat:57.46,notlar:""},
+    {code:"B.2.12",tanim:"Kesici-AT-GT Röle Testleri",birim:"Hücre",miktar:42,birimFiyat:2000,fiyatCur:"USD",rawFiyat:2000,notlar:""}]},
+  {code:"B.3",name:"Teklif Geçerlilik Süresi Riskleri",items:[
+    {code:"B.3.1",tanim:"LME Riski",birim:"Set",miktar:1,birimFiyat:0,fiyatCur:"USD",rawFiyat:0,notlar:""},
+    {code:"B.3.2",tanim:"İşçilik Asgari Ücret Artış Riskleri",birim:"Set",miktar:1,birimFiyat:0,fiyatCur:"USD",rawFiyat:0,notlar:""}]},
+  {code:"B.4",name:"Mektup Masrafları & Damga Vergisi",items:[
+    {code:"B.4.1",tanim:"Geçici Teminat Komisyonu",birim:"Set",miktar:0.5,birimFiyat:62400,fiyatCur:"USD",rawFiyat:62400,notlar:""},
+    {code:"B.4.2",tanim:"Kesin Teminat Komisyonu",birim:"Set",miktar:2,birimFiyat:31200,fiyatCur:"USD",rawFiyat:31200,notlar:""},
+    {code:"B.4.6",tanim:"Damga Vergisi",birim:"Set",miktar:1,birimFiyat:0,fiyatCur:"USD",rawFiyat:0,notlar:"SatışFiyatı x 0.00948 — dinamik"}]},
+  {code:"B.5",name:"All Risk + Mali Mesuliyet",items:[
+    {code:"B.5.1",tanim:"All Risk Sigortası",birim:"MW",miktar:39,birimFiyat:1100,fiyatCur:"USD",rawFiyat:1100,notlar:""},
+    {code:"B.5.2",tanim:"Mali Mesuliyet Sigortası",birim:"MW",miktar:39,birimFiyat:350,fiyatCur:"USD",rawFiyat:350,notlar:""}]},
+  {code:"B.6",name:"Proje Finans Maliyeti",items:[
+    {code:"B.6.1",tanim:"Finans Maliyeti (Cash Flow hesabından)",birim:"Set",miktar:1,birimFiyat:0,fiyatCur:"USD",rawFiyat:0,notlar:""}]}
+];
+
+const DEF_S={
+  isveren:"Enerjisa",projeAdi:"GES Projesi",il:"Ankara",ilce:"Polatlı",
+  dcGuc:39,acGuc:30,panelGuc:625,panelAdet:62400,invGuc:350,invAdet:85,
+  baslangic:"2026-01-01",sure:180,usd:43.51,eur:51.52,krediFaiz:4.2,mevduat:0,
+  contingency:1,genelGider:9,netKar:3,
+  panelAlts:[{name:"Elin",price:0.185},{name:"Schmid Pekintaş",price:0.19},{name:"Daxler",price:0.17}],
+  konstrAlts:[{name:"Magnelis",price:31000},{name:"SDG",price:43500},{name:"Tracker",price:74000}],
+  invAlts:[{name:"Sungrow",price:7250},{name:"Huawei",price:0},{name:"Sineng",price:0}],
+  trafoSayisi:1,cevreTelcit:400,projeAlani:10000,
+  selPanel:0,selKonstr:0,selInv:0,
+  notes:["Detay mühendislik tasarım aşamasında metraj/adet yerleşim farklılıkları söz konusu olabilecektir.","Dağıtım merkezi ve içindeki hücreler teklife dahildir.","Trafolar AL sargılıdır.","Çakım olarak düşünülmüştür.","Teklifimizin iletildiği tarihten itibaren Türkiye ve Çin'de artış söz konusu olan her türlü vergi vb. değişiminde teklifimiz geçerli değildir.","Hafriyat ve ENH dahil değildir.","Saha içi yollar mıcır olarak düşünülmüştür.","Yangın algılama sistemi düşünülmemiştir."],
+  risks:[]
+};
+
+const DEF_TL={months:12,startYear:2026,rows:[
+  {name:"Avans",type:"inflow",values:[0.30,0,0,0,0,0,0,0,0,0,0,0]},
+  {name:"Ara Hakediş",type:"inflow",values:[0,0.05,0.20,0.15,0.20,0,0,0,0,0,0,0]},
+  {name:"İş Bitiş Ödemesi",type:"inflow",values:[0,0,0,0,0,0.10,0,0,0,0,0,0]},
+  {name:"A.1 Panel Ödemesi",type:"outflow",values:[40,30,30,0,0,0,0,0,0,0,0,0]},
+  {name:"A.2 İnverter Ödemesi",type:"outflow",values:[0,50,50,0,0,0,0,0,0,0,0,0]},
+  {name:"A.3 Konstrüksiyon Ödemesi",type:"outflow",values:[0,0,50,50,0,0,0,0,0,0,0,0]},
+  {name:"A.4 Kablo Ödemesi",type:"outflow",values:[0,20,40,40,0,0,0,0,0,0,0,0]},
+  {name:"A.5 Bağlantı Elem. Ödemesi",type:"outflow",values:[0,20,40,40,0,0,0,0,0,0,0,0]},
+  {name:"A.6 Boru-Kum-Bims Ödemesi",type:"outflow",values:[0,20,40,40,0,0,0,0,0,0,0,0]},
+  {name:"A.7 OG Hücre-Trafo Ödemesi",type:"outflow",values:[0,50,50,0,0,0,0,0,0,0,0,0]},
+  {name:"A.8 Pano-Komp. Ödemesi",type:"outflow",values:[0,30,40,30,0,0,0,0,0,0,0,0]},
+  {name:"A.9 Topraklama Ödemesi",type:"outflow",values:[0,30,40,30,0,0,0,0,0,0,0,0]},
+  {name:"A.10 SCADA Ödemesi",type:"outflow",values:[0,0,50,0,50,0,0,0,0,0,0,0]},
+  {name:"A.11 Aydınlatma-CCTV Ödemesi",type:"outflow",values:[0,0,50,50,0,0,0,0,0,0,0,0]},
+  {name:"A.12 İnşaat İşleri Ödemesi",type:"outflow",values:[10,20,30,30,10,0,0,0,0,0,0,0]},
+  {name:"A.13 İşçilik Ödemesi",type:"outflow",values:[0,20,20,20,20,20,0,0,0,0,0,0]},
+  {name:"A.14 Kurum Harçları",type:"outflow",values:[50,0,0,0,50,0,0,0,0,0,0,0]},
+  {name:"A.15 KKT-Sarf Ödemesi",type:"outflow",values:[0,20,30,30,20,0,0,0,0,0,0,0]},
+  {name:"A.16 Nakliye Ödemesi",type:"outflow",values:[0,30,40,30,0,0,0,0,0,0,0,0]},
+  {name:"A.17 Test-Devreye Alma",type:"outflow",values:[0,0,0,0,50,50,0,0,0,0,0,0]},
+  {name:"A.18 Yedek Malzeme",type:"outflow",values:[0,0,0,0,50,50,0,0,0,0,0,0]},
+  {name:"B.1 Genel Gider (Aylık)",type:"outflow",values:[17,17,16,17,17,16,0,0,0,0,0,0]},
+  {name:"B.2 O&M - Garanti Bedeli",type:"outflow",values:[0,0,0,0,0,0,17,17,17,17,16,16]},
+  {name:"B.3 Risk Karşılığı",type:"outflow",values:[0,0,0,0,0,100,0,0,0,0,0,0]},
+  {name:"B.4 Teminat-Damga Vergisi",type:"outflow",values:[50,0,0,0,50,0,0,0,0,0,0,0]},
+  {name:"B.5 Sigorta",type:"outflow",values:[100,0,0,0,0,0,0,0,0,0,0,0]}
+]};
+
+const DEF_DOR=[
+  {name:"1 — VERGİ, SGK, İZİNLER",items:[
+    {description:"1.1 Sözleşme damga vergisi",tedarik:"Paylaşımlı",montaj:"—",devreAma:"—",notes:"Yarı yarıya ödenecektir."},
+    {description:"1.2 Arazi Mülkiyeti İzinleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Hukuki, arazi mülkiyeti ve şirket evraklarının temini."},
+    {description:"1.3 Atık Bedeli",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Saha içi eritilemeyen hafriyatın depolama yeri tahsisi ve döküm bedelinin ödenmesi."},
+    {description:"1.4 ÇED Raporu",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"1.5 Önlisans ve Lisanslama",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"1.6 Bağlantı Anlaşması - Görüşü",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"1.7 İmar ve İnşaat İzinleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Saha içi ve dışı ENH güzergahı ile ilgili izinler ve harçların ödenmesi; yatay sondaj izinleri vb."},
+    {description:"1.8 İşveren Sorumluluğundaki Resmi İş Takibi",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Kurumlara dilekçelerin sunulması, takibi ve sonlandırılması."},
+    {description:"1.9 Personelin SSK primlerinin ödenmesi",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"1.10 Personel Çalışma İzinleri",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"1.11 Projelerin Resmi Kurum Onayı",tedarik:"Paylaşımlı",montaj:"—",devreAma:"—",notes:"Yerleşim planları, yapısal-statik projeler, elektrik tesisat projeleri, tek hat şemaları, topraklama planları vb."},
+    {description:"1.12 Kurum Kabul Başvurusu",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Resmi Kurum kabullerinin başvurusu, harçların yatırılması, kabul işlemlerinin yapılması."},
+    {description:"1.13 As-Built proje yapımı",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""}
+  ]},
+  {name:"2 — PERSONEL",items:[
+    {description:"2.1 Ücretler (Maaş, izin, mesai, tazminat, prim)",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"2.2 Teknik ve saha personeli konaklama yeri",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"2.3 Personel yemek giderleri",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Yemekler sahada verilecektir."},
+    {description:"2.4 Personelin saha içi ve dışı ulaşımı",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""}
+  ]},
+  {name:"3 — ŞANTİYE MOBİLİZASYONU",items:[
+    {description:"3.1 Ofis binası ve tefrişi temini",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Yüklenici kendi ofisidir."},
+    {description:"3.2 Telefon, fax, internet masrafları",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.3 WC Konteyner temini",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.4 Günlük şantiye sahası temizliği",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.5 Gece çalışması için şantiye aydınlatması",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Yerel izinlerin alınması Yüklenicinin sorumluluğundadır."},
+    {description:"3.6 Şantiye elektrik enerjisinin temini",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.7 Şantiye kullanım suyu temini ve bedeli",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Şantiye alanına kalıcı su temini İşveren uhdesindedir."},
+    {description:"3.8 İçme suyu temini ve bedeli",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Personel için taşıma içme su temini Yüklenici sorumluluğundadır."},
+    {description:"3.9 İşveren mobilizasyonu ve idari ofisleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.10 3. taraf kuruluşlar mobilizasyon ve idari ofisleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"3.11 İşe başlama izinleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Şantiye mobilizasyonu öncesi gerekli idari izinlerin alınması ve saha erişim onaylarının sağlanması."},
+    {description:"3.12 Mevcut altyapının haritalandırılması",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"Şantiye başlangıcında mevcut altyapı (elektrik, su, fiber, doğalgaz vb.) konum bilgilerinin paylaşılması."}
+  ]},
+  {name:"4 — PV MODÜL, DC KABLOLAR VE KONNEKTÖRLER",items:[
+    {description:"4.1 PV Modül",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"1500 V"},
+    {description:"4.2 DC kablo ve Bağlantısı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"1x6 H1Z2Z2-K DC kablo temin ve montajı"},
+    {description:"4.3 UV kablo bağı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"4.4 HDPE - Spiral boru",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Projesine uygun"},
+    {description:"4.5 DC kablo kazısı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Her türlü iş makinası dahil"},
+    {description:"4.6 DC Konnektörler",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Staubli 1500V"},
+    {description:"4.7 DC kablo tavası",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sadece inverter altına h:60 SDG"}
+  ]},
+  {name:"5 — ALÇAK GERİLİM AC TARAF İŞLERİ",items:[
+    {description:"5.1 İnverter",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"String - Sahada Yüklenici tarafından teslim alınacaktır."},
+    {description:"5.2 İnverter - AG Pano arası kablo ve tertibat",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Kablo bağlantıları dahil"},
+    {description:"5.3 AG Pano",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Anahtar teslim saha teslim pano imalatı"},
+    {description:"5.4 AG Pano - Trafo arası kablo ve tertibat",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Projesine uygun şekilde"},
+    {description:"5.5 HDPE - Spiral boru",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"5.6 AC kablo kazıları",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"5.7 SKP - Makaron-Kum-Bims-İkaz Şeriti vb. yardımcı malzeme",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""}
+  ]},
+  {name:"6 — YÜKSEK GERİLİM AC TARAF İŞLERİ",items:[
+    {description:"6.1 Monoblok Beton Köşk",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sahada Yüklenici tarafından teslim alınacaktır."},
+    {description:"6.2 Trafo",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sahada Yüklenici tarafından teslim alınacaktır."},
+    {description:"6.3 Trafo - OG Hücre arası kablo ve tertibat",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"6.4 OG Hücre",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sahada Yüklenici tarafından teslim alınacaktır."},
+    {description:"6.5 OG Hücre-OG Hücre XLPE arası kablo",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"6.6 OG Hücre - Trafo Merkezi arası XLPE kablo",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"6.7 XLPE Kablo kanal kazısı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"6.8 SKP - Makaron-Kum-Bims-İkaz Şeriti vb. yardımcı malzeme",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""}
+  ]},
+  {name:"7 — TOPRAKLAMA VE YILDIRIMDAN KORUNMA",items:[
+    {description:"7.1 Çevre galvaniz şerit topraklaması",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"30x3,5 mm GŞ"},
+    {description:"7.2 Çevre topraklaması kazısı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Teknik şartnameye uyumlu şekilde"},
+    {description:"7.3 Galvaniz şerit - Masa topraklaması",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Masa filizlerinin yapılması"},
+    {description:"7.4 Masa-Masa arası galvaniz şerit bağlantısı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"7.5 Trafo koruma topraklaması kablosu ve tertibatları",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""}
+  ]},
+  {name:"8 — KONSTRÜKSİYON",items:[
+    {description:"8.1 Magnelis kaplama çelik konstrüksiyon",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"8.2 İnverter supportları",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"8.3 Çakma methodu ile post montajı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"8.4 Rok delgi methodu ile post montajı",tedarik:"Paylaşımlı",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Çakım yapılamayan her post için ilgili birim fiyatlar uygulanacaktır."},
+    {description:"8.5 Mezar beton ile post montajı",tedarik:"Paylaşımlı",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Çakım ve delim yapılamayan her post için ilgili birim fiyatlar uygulanacaktır."}
+  ]},
+  {name:"9 — İNŞAAT İŞLERİ - ÇEVRE AYD. VE CCTV",items:[
+    {description:"9.1 Saha hazırlama ve hafriyat",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Saha koşulları gereği sadece nebati sıyırma yapılacaktır."},
+    {description:"9.2 Drenaj",tedarik:"İşveren",montaj:"İşveren",devreAma:"İşveren",notes:""},
+    {description:"9.3 Saha içi çevre yolları",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"9.4 Mıcır Serimi",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Mıcır sadece trafo-pano lokasyonlarına ulaşım yollarına serilecektir."},
+    {description:"9.5 Beton/Asfalt yol yapımı",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Kapı girişinden idari bina önüne kadar."},
+    {description:"9.6 Telçit - Kayar Kapı vs.",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"1 adet motorlu kayar kapı ve 1 adet personel giriş kapısı"},
+    {description:"9.7 Çevre Aydınlatma",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Direkler - kazılar - menhollar vs. tüm tertibat"},
+    {description:"9.8 CCTV",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"NVR - Switch - Boxlar - UPS vs. tüm ekipman"},
+    {description:"9.9 İdari Prefabrik Bina",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"200 m2 tefrişatsız"},
+    {description:"9.10 Güvenlik Kabini",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"150x150 cm kulübe - beton temeli dahil"},
+    {description:"9.11 Saha içi atık uzaklaştırma",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""}
+  ]},
+  {name:"10 — MALZEME NAKLİYE VE DEPOLAMA",items:[
+    {description:"10.1 Yüklenici kapsamındaki malzemeler (Nakliye)",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"10.2 İşveren kapsamındaki malzemeler (Nakliye)",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"İlgili sigortaları dahil - Ambarda Yükleniciye teslim edilene kadar tüm sorumluluk İşverene aittir."},
+    {description:"10.3 Malzemelerin ana ambara indirilmesi",tedarik:"Paylaşımlı",montaj:"Yüklenici",devreAma:"—",notes:""},
+    {description:"10.4 Montaja hazır malzeme/ürünlerin saha içi nakliyeleri",tedarik:"Paylaşımlı",montaj:"Yüklenici",devreAma:"—",notes:""},
+    {description:"10.5 Ambar sorumluluğu",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:""},
+    {description:"10.6 Ambardan alınan veya sahaya gelen malzemenin sorumluluğu",tedarik:"Paylaşımlı",montaj:"Yüklenici",devreAma:"—",notes:""}
+  ]},
+  {name:"11 — TASARIM - DÖKÜMANTASYON",items:[
+    {description:"11.1 Taslak tasarım projeleri",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"İhaleye esas, uygulama detayları içermeyen prensip tasarımlar"},
+    {description:"11.2 Uygulama projeleri",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"GES, trafo merkezi ve ENH'a ait tüm mühendislik çizimlerinin ve hesaplarının hazırlanması (TSO ve DSO isterlerine uygun)"},
+    {description:"11.3 İdari izinlere esas dökümanlar",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"İmar, çevresel izin, yapı ruhsatı, şebeke bağlantısı ve lisans süreçleri için gerekli teknik dosyaların hazırlanması."},
+    {description:"11.4 İşveren kapsamındaki malzemelerin projelendirmesi",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:"İşveren tarafından sağlanacak ekipmanların ve sekonder projelerin tüm elektriksel sistemlere entegrasyonu."}
+  ]},
+  {name:"12 — HSE - İŞ SAĞLIĞI VE GÜVENLİĞİ",items:[
+    {description:"12.1 Tam zamanlı İSG personelinin çalıştırılması",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sahada yerel gereksinimler ile uyumlu sayıda HSE personelinin bulundurulması"},
+    {description:"12.2 İş yeri hekimi, ambulans ve yerel sağlık hizmeti",tedarik:"İşveren",montaj:"İşveren",devreAma:"İşveren",notes:"Yerel gereksinimlerce sahada bulunması gerekli işyeri hekimi ve sağlık hizmeti"},
+    {description:"12.3 İSG Evrakları temini",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Çalışacak her bir personel için yerel gereksinimlere uygun eğitimler ve dokümantasyon"},
+    {description:"12.4 Personel KKD (kişisel koruyucu ekipman) temini",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"12.5 Saha ilk yardım ilaç ve ekipman giderleri",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Sahada bulunması planlanan ilk yardım ekibinin kurulması ve gerekli ekipman tedariği"}
+  ]},
+  {name:"13 — EKİPMAN",items:[
+    {description:"13.1 İskele, platform ve merdiven temini, kurulumu ve sökümü",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"Malzeme montaj kapsamıyla uyumlu ekipmanın bulundurulması"},
+    {description:"13.2 Montaj vinci, telehandler, bekoloader, forklift, tır ve kamyon vb. temini",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""},
+    {description:"13.3 Malzemelerin ambara/sahaya indirilmesi için gerekli personel",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"İşveren ve Yüklenici kapsamı her türlü iş ekipmanının sahada indirilmesi ve teslim alınması"},
+    {description:"13.4 Malzemelerin ambara indirilmesi için gerekli iş makinesi",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:"İşveren ve Yüklenici kapsamı her türlü iş ekipmanının sahada indirilmesi ve teslim alınması"},
+    {description:"13.5 Malzemelerin ambardan sahaya taşınması / indirilmesi",tedarik:"Yüklenici",montaj:"Yüklenici",devreAma:"Yüklenici",notes:""}
+  ]},
+  {name:"14 — SİGORTA VE GÜVENLİK",items:[
+    {description:"14.1 Montaj All Risk sigortaları",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Montaj kapsamında Yüklenicinin tedariğini sağladığı tüm malzemeler için"},
+    {description:"14.2 Üçüncü şahıs mali mesuliyet",tedarik:"İşveren",montaj:"—",devreAma:"—",notes:""},
+    {description:"14.3 Nakliye sigortaları",tedarik:"Yüklenici",montaj:"—",devreAma:"—",notes:"Malzemelerin sahaya ulaşana kadarki süreç sigortası - her taraf kendi tedariğinden sorumludur."},
+    {description:"14.4 Saha ve şantiye alanı güvenliği",tedarik:"Paylaşımlı",montaj:"—",devreAma:"—",notes:"Yüklenici kapsamındaki her malzeme için güvenlik sorumluluğu Yüklenicidedir. Saha genel güvenlik operasyonu İşveren kapsamındadır."}
+  ]}
+]
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let db,auth,cu;
+let projects=[],curProjId=null,PD=null;
+let dCfCh=null,dPieCh=null,cfBarCh=null,cfCumCh=null;
+
+// ═══════════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════════
+function initFB(){
+  try{firebase.initializeApp(FB);db=firebase.firestore();auth=firebase.auth();}
+  catch(e){toast('Firebase bağlantı hatası!','error');return;}
+
+  auth.onAuthStateChanged(async u=>{
+    if(u){cu=u;
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('main-app').style.display='flex';
+      document.getElementById('uemail').textContent=u.email;
+      await loadProjs();initUI();
+    }else{cu=null;document.getElementById('auth-screen').style.display='flex';document.getElementById('main-app').style.display='none';}
+  });
+
+  let isL=true;
+  document.getElementById('asub').onclick=async()=>{
+    const em=document.getElementById('aemail').value.trim(),pw=document.getElementById('apass').value,el=document.getElementById('aerr');
+    el.textContent='';
+    if(!em||!pw){el.textContent='E-posta ve şifre zorunludur.';return;}
+    try{if(isL)await auth.signInWithEmailAndPassword(em,pw);else await auth.createUserWithEmailAndPassword(em,pw);}
+    catch(e){const m={'auth/user-not-found':'Kullanıcı bulunamadı.','auth/wrong-password':'Şifre hatalı.','auth/email-already-in-use':'Bu e-posta zaten kayıtlı.','auth/weak-password':'Şifre en az 6 karakter.','auth/invalid-credential':'E-posta veya şifre hatalı.'};el.textContent=m[e.code]||e.message;}
+  };
+  document.getElementById('atog').onclick=()=>{
+    isL=!isL;
+    document.getElementById('aml').textContent=isL?'Giriş Yap':'Hesap Oluştur';
+    document.getElementById('asub').textContent=isL?'Giriş Yap':'Kayıt Ol';
+    document.getElementById('atog').textContent=isL?'Hesabın yok mu? Kayıt ol':'Zaten hesabın var mı? Giriş yap';
+    document.getElementById('ng').style.display=isL?'none':'block';
+    document.getElementById('aerr').textContent='';
+  };
+  ['aemail','apass','aname'].forEach(id=>{const el=document.getElementById(id);if(el)el.onkeydown=e=>{if(e.key==='Enter')document.getElementById('asub').click();};});
+  document.getElementById('sobtn').onclick=()=>auth.signOut();
+}
+
+// ═══════════════════════════════════════════════════
+// FIRESTORE
+// ═══════════════════════════════════════════════════
+async function loadProjs(){
+  const snap=await db.collection(`users/${cu.uid}/projects`).get();
+  projects=[];snap.forEach(d=>projects.push({id:d.id,...d.data()}));
+  renderPSel();
+}
+async function loadProj(id){
+  const snap=await db.doc(`users/${cu.uid}/projects/${id}`).get();
+  if(snap.exists){PD=migrate(snap.data());curProjId=id;updateDynKA();updateDynKB();renderAll();}
+}
+async function saveProj(){
+  if(!curProjId||!PD)return;
+  PD.updatedAt=new Date().toISOString();
+  await db.doc(`users/${cu.uid}/projects/${curProjId}`).set(PD);
+  toast('✓ Kaydedildi','success');
+}
+// ── Keşif-A miktar formülleri: proje parametrelerinden otomatik ──
+function calcQty(code,s){
+  const dc=parseFloat(s.dcGuc)||1, ia=parseFloat(s.invAdet)||3, ts=parseFloat(s.trafoSayisi)||1;
+  const pg=parseFloat(s.panelGuc)||625, cv=parseFloat(s.cevreTelcit)||400, al=parseFloat(s.projeAlani)||10000;
+  const pa=Math.round(dc*1e6/pg);
+  const T={
+    'A.1.1':dc*1000000, 'A.2.1':ia, 'A.2.2':Math.max(1,Math.ceil(ia/28)),
+    'A.3.1':dc,
+    'A.4.1':Math.round(9000*dc), 'A.4.5':Math.round(1080*dc), 'A.4.6':Math.round(540*dc),
+    'A.4.7':Math.round(36*ts), 'A.4.8':Math.round(500*dc), 'A.4.9':Math.round(20*ts),
+    'A.4.10':ia, 'A.4.11':ia, 'A.4.12':Math.round(33.33*dc),
+    'A.4.13':Math.round(432*dc), 'A.4.14':Math.round(432*dc), 'A.4.15':Math.round(648*dc),
+    'A.4.16':Math.round(400*dc), 'A.4.17':Math.round(450*dc), 'A.4.18':Math.round(6*ts),
+    'A.5.1':Math.round(3*ts), 'A.5.2':Math.round(12*ts), 'A.5.3':Math.round(3*ts),
+    'A.5.4':Math.round(498*dc), 'A.5.5':Math.round(21*ts), 'A.5.6':ia, 'A.5.7':ia,
+    'A.5.8':Math.round(133*dc), 'A.5.9':1, 'A.5.10':Math.round(67*dc), 'A.5.11':Math.round(54*dc),
+    'A.6.1':Math.round(900*dc), 'A.6.2':Math.round(200*dc), 'A.6.3':Math.round(67*dc),
+    'A.6.4':Math.round(400*dc), 'A.6.5':Math.round(400*dc), 'A.6.6':Math.round(450*dc),
+    'A.6.7':Math.round(340*dc), 'A.6.8':Math.round(dc*6), 'A.6.9':Math.round(dc*4000),
+    'A.6.10':Math.round(dc*1000), 'A.6.11':Math.round(cv*0.625),
+    'A.7.1':Math.round(ts*2), 'A.7.2':ts, 'A.7.3':ts, 'A.7.4':ts, 'A.7.5':ts, 'A.7.6':ts,
+    'A.8.1':Math.round(ts*2), 'A.8.2':ts,
+    'A.9.1':Math.round(cv*3), 'A.9.2':Math.round(cv*0.06), 'A.9.3':500, 'A.9.4':12,
+    'A.10.1':1, 'A.10.2':1, 'A.11.1':Math.floor(cv/50),
+    'B.12.1':al, 'B.12.2':cv, 'B.12.3':Math.round(ts*16), 'B.12.4':1,
+    'B.12.5':0, 'B.12.6':0, 'B.12.7':0, 'B.12.8':ts, 'B.12.9':Math.round(dc*40), 'B.12.10':120,
+    'A.13.1':dc, 'A.13.2':dc, 'A.13.3':Math.floor(cv/50),
+    'A.14.1':1, 'A.14.2':1, 'A.14.3':1, 'A.14.4':1,
+    'A.15.1':1, 'A.15.2':ia, 'A.15.3':ts, 'A.15.4':Math.round(1500*dc),
+    'A.15.5':Math.round(8*ts), 'A.15.6':1, 'A.15.7':1,
+    'A.16.1':parseFloat((pa/667).toFixed(3)), 'A.16.2':parseFloat((ia/16).toFixed(3)),
+    'A.16.3':Math.round(dc*2), 'A.16.4':1, 'A.16.5':ts, 'A.16.6':1, 'A.16.7':ts, 'A.16.8':1,
+    'A.17.1':dc, 'A.17.2':Math.round(ts*9), 'A.17.3':Math.round(ts*2), 'A.17.4':1, 'A.17.5':ts,
+    'A.18.1':Math.round(dc*5000), 'A.18.2':Math.round(dc*90),
+    'A.18.3':Math.max(1,Math.ceil(ia/3)), 'A.18.4':250, 'A.18.5':50, 'A.18.6':12,
+    'A.18.7':100, 'A.18.8':3000, 'A.18.9':3000, 'A.18.10':1000, 'A.18.11':1000
+  };
+  return T[code]!==undefined?T[code]:null;
+}
+
+function wizCalc(){
+  const dc=parseFloat(document.getElementById('w-dc')?.value)||1;
+  const pg=parseFloat(document.getElementById('w-pg')?.value)||625;
+  const el=document.getElementById('w-pa');
+  if(el) el.value=Math.round(dc*1e6/pg).toLocaleString('tr-TR')+' adet';
+}
+
+async function createProj(ws){
+  console.log('[createProj] starting with:', ws.projName);
+  // Build settings from defaults + wizard input
+  const defS=JSON.parse(JSON.stringify(DEF_S));
+  const s=Object.assign(defS, ws);
+  delete s.projName; // remove wizard-only field
+
+  // Calculate Kesif-A quantities from settings
+  const freshKA=JSON.parse(JSON.stringify(DEF_KA));
+  freshKA.forEach(function(g){
+    g.items.forEach(function(it){
+      try{
+        var q=calcQty(it.code,s);
+        if(q!==null) it.miktar=q;
+      }catch(qErr){
+        console.warn('calcQty error for',it.code,qErr);
+      }
+    });
+  });
+
+  const freshKB=JSON.parse(JSON.stringify(DEF_KB));
+  const freshTL=JSON.parse(JSON.stringify(DEF_TL));
+  // Auto-scale timeline to project duration on creation
+  const tmpMonths=Math.max(1,Math.ceil((parseFloat(s.sure)||180)/30));
+  const REF2=12;
+  (freshTL.rows||[]).forEach(function(r){
+    const v=r.values||[];
+    const isInflow=r.type==='inflow';
+    let first=-1,last=-1;
+    for(let i=0;i<v.length;i++){if(parseFloat(v[i]||0)>0){if(first<0)first=i;last=i;}}
+    if(first<0){r.values=Array(tmpMonths).fill(0);return;}
+    const ss=Math.round((first/REF2)*tmpMonths);
+    const se=Math.max(ss,Math.round(((last+1)/REF2)*tmpMonths)-1);
+    const spanS=Math.max(0,Math.min(tmpMonths-1,ss));
+    const spanE=Math.max(spanS,Math.min(tmpMonths-1,se));
+    const spanL=spanE-spanS+1;
+    const origVals=[];
+    for(let i=first;i<=last;i++){const pv=parseFloat(v[i]||0);if(pv>0)origVals.push(pv);}
+    const origTotal=origVals.reduce((a,b)=>a+b,0);
+    const nv=Array(tmpMonths).fill(0);
+    const share=parseFloat((origTotal/spanL).toFixed(4));
+    for(let j=0;j<spanL;j++) nv[spanS+j]=share;
+    const target=isInflow?origTotal:100;
+    const ns=nv.reduce((a,b)=>a+b,0);
+    if(ns>0&&Math.abs(ns-target)>0.01){const fac=target/ns;nv.forEach((x,i)=>{nv[i]=parseFloat((x*fac).toFixed(4));});}
+    const ns2=nv.reduce((a,b)=>a+b,0);
+    for(let i=nv.length-1;i>=0;i--){if(nv[i]>0){nv[i]=parseFloat((nv[i]+(target-ns2)).toFixed(4));break;}}
+    r.values=nv;
+  });
+  freshTL.months=tmpMonths;
+  const freshDOR=JSON.parse(JSON.stringify(DEF_DOR));
+
+  const np={
+    name: ws.projName||s.projeAdi||'Yeni Teklif',
+    createdAt: new Date().toISOString(),
+    settings: s,
+    kesifData: freshKA,
+    kesifBData: freshKB,
+    timeline: freshTL,
+    dor: freshDOR
+  };
+
+  console.log('[createProj] writing to Firestore, data size ~'+JSON.stringify(np).length+' bytes');
+  var ref;
+  try{
+    ref=await db.collection('users').doc(cu.uid).collection('projects').add(np);
+  }catch(fbErr){
+    console.error('Firestore write failed:',fbErr);
+    throw new Error('Firestore yazma hatası: '+fbErr.code+' - '+fbErr.message);
+  }
+  console.log('[createProj] created doc:', ref.id);
+  projects.push(Object.assign({id:ref.id},np));
+  renderPSel();
+  await loadProj(ref.id);
+  document.getElementById('psel').value=ref.id;
+  console.log('[createProj] done');
+}
+
+// ── Dinamik Keşif-B fiyat güncellemesi ──
+// B.2.5 Panel Yıkama = DC Güç (MW) x 1500 USD
+// B.4.1 Geçici Teminat = SatışFiyatı x 0.20 x 0.04
+// B.4.2 Kesin Teminat  = SatışFiyatı x 0.20 x 0.04 x 2
+// B.4.6 Damga Vergisi  = SatışFiyatı x 0.00948
+function updateDynKB(){
+  if(!PD||!PD.kesifBData) return;
+  const s=PD.settings;
+  const dc=parseFloat(s.dcGuc)||1;
+  // Calculate sat price with CURRENT KB values (before updating)
+  const f=calc();
+  if(!f) return;
+  (PD.kesifBData).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.1.7'){
+      const p=parseFloat(s.dcGuc||1)*3488;
+      it.birimFiyat=parseFloat(p.toFixed(2)); it.rawFiyat=it.birimFiyat; it.miktar=1;
+    }
+    if(it.code==='B.2.9'){
+      it.birimFiyat=1000; it.rawFiyat=1000;
+    }
+    if(it.code==='B.2.5'){
+      it.birim='MW'; it.miktar=dc; it.birimFiyat=1500; it.rawFiyat=1500; it.fiyatCur='USD';
+    }
+    if(it.code==='B.4.1'){
+      const p=parseFloat((f.sat*0.20*0.04).toFixed(2));
+      it.birimFiyat=p; it.rawFiyat=p;
+    }
+    if(it.code==='B.4.2'){
+      const p=parseFloat((f.sat*0.20*0.04*2).toFixed(2));
+      it.birimFiyat=p; it.rawFiyat=p;
+    }
+    if(it.code==='B.4.6'){
+      const p=parseFloat((f.sat*0.00948).toFixed(2));
+      it.birimFiyat=p; it.rawFiyat=p;
+    }
+    // B.2.10 Elektrik Bakım IV Curve = DC güç (MW)
+    if(it.code==='B.2.10'){
+      it.miktar=dc;
+    }
+    // B.5.1 All Risk Sigortası = DC güç (MW)
+    if(it.code==='B.5.1'){
+      it.miktar=dc;
+    }
+    // B.5.2 Mali Mesuliyet = DC güç (MW)
+    if(it.code==='B.5.2'){
+      it.miktar=dc;
+    }
+  }));
+  // B.2.12 Kesici-AT-GT Röle Testleri = A.7.1 + A.7.2 adeti (KA'dan alınır)
+  let a71=0,a72=0;
+  (PD.kesifData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='A.7.1') a71=parseFloat(it.miktar)||0;
+    if(it.code==='A.7.2') a72=parseFloat(it.miktar)||0;
+  }));
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.2.12') it.miktar=a71+a72;
+  }));
+  // B.2.11 VLF = A.17.2 VLF Testleri (miktar + birimFiyat)
+  let a172mik=0, a172fiy=0;
+  (PD.kesifData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='A.17.2'){a172mik=parseFloat(it.miktar)||0;a172fiy=parseFloat(it.birimFiyat)||0;}
+  }));
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.2.11'){it.miktar=a172mik;it.birimFiyat=a172fiy;it.rawFiyat=a172fiy;}
+  }));
+  // B.1.8 Aylık Personel Masraf = B.1.1+B.1.2+B.1.3+B.1.4 adamaylar toplamı
+  // B.1.9 Aylık Mobilizasyon Giderleri miktarı = toplam proje ayı
+  let b11=0,b12=0,b13=0,b14=0;
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.1.1')b11=parseFloat(it.miktar)||0;
+    if(it.code==='B.1.2')b12=parseFloat(it.miktar)||0;
+    if(it.code==='B.1.3')b13=parseFloat(it.miktar)||0;
+    if(it.code==='B.1.4')b14=parseFloat(it.miktar)||0;
+  }));
+  const months2=Math.max(1,Math.ceil((parseFloat(s.sure)||180)/30));
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.1.8') it.miktar=b11+b12+b13+b14;
+    if(it.code==='B.1.9') it.miktar=months2;
+  }));
+}
+
+
+// ── Dinamik Keşif-A güncellemesi ──
+// A.18 Yedek malzemeleri ana kalemlerin %1'i (yuvarlanmış), birim fiyat aynı
+// B.1 Personel miktarları proje süresine göre
+function updateDynKA(){
+  if(!PD||!PD.kesifData) return;
+  const s=PD.settings;
+  const months=Math.max(1,Math.ceil((parseFloat(s.sure)||180)/30));
+  // Map: A.18.x kaynak kodu → ana kalem kodu
+  const spareMap={
+    'A.18.1':'A.1.1','A.18.2':'A.4.1','A.18.3':'A.2.1','A.18.4':'A.5.10',
+    'A.18.5':'A.5.1','A.18.6':'A.5.3','A.18.7':'A.5.4','A.18.8':'A.4.5',
+    'A.18.9':'A.4.8','A.18.10':'A.4.15','A.18.11':'A.4.16'
+  };
+  // Collect main item data
+  const mainData={};
+  (PD.kesifData).forEach(g=>g.items.forEach(it=>{
+    mainData[it.code]={miktar:parseFloat(it.miktar)||0, birimFiyat:parseFloat(it.birimFiyat)||0};
+  }));
+  // Update spare items
+  (PD.kesifData).forEach(g=>g.items.forEach(it=>{
+    const src=spareMap[it.code];
+    if(src&&mainData[src]){
+      it.miktar=Math.round(mainData[src].miktar*0.01)||0;
+      it.birimFiyat=mainData[src].birimFiyat;
+      it.rawFiyat=mainData[src].birimFiyat;
+    }
+    // B.12.5 İşletme Binası, B.12.6 DM Binası, B.12.7 Güvenlik Kulübesi always 0
+    if(['B.12.5','B.12.6','B.12.7'].includes(it.code)) it.miktar=0;
+  }));
+  // B.1 Personnel: update in Keşif-B based on project duration
+  if(!PD.kesifBData) return;
+  const personnel={
+    'B.1.1':{count:2},'B.1.2':{count:1},'B.1.3':{count:1},
+    'B.1.4':{count:2},'B.1.5':{count:1}
+  };
+  (PD.kesifBData).forEach(g=>g.items.forEach(it=>{
+    if(personnel[it.code]!==undefined){
+      it.miktar=personnel[it.code].count*months;
+    }
+  }));
+}
+
+function migrate(d){
+  if(d.dor)d.dor=d.dor.map(s=>({...s,items:(s.items||[]).map(it=>({description:it.description||'',tedarik:it.tedarik||(it.owner||'Yüklenici'),montaj:it.montaj||(it.owner||'Yüklenici'),devreAma:it.devreAma||(it.owner||'Yüklenici'),notes:it.notes||''}))}));
+  const mk=arr=>(arr||[]).map(g=>({...g,items:(g.items||[]).map(it=>({...it,fiyatCur:it.fiyatCur||'USD',rawFiyat:it.rawFiyat!==undefined?it.rawFiyat:it.birimFiyat,notlar:it.notlar||''}))}));
+  d.kesifData=mk(d.kesifData);d.kesifBData=mk(d.kesifBData);
+  return d;
+}
+
+// ═══════════════════════════════════════════════════
+// UI INIT
+// ═══════════════════════════════════════════════════
+function initUI(){
+  document.querySelectorAll('.ni').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+      const pg=btn.dataset.page;
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById(`page-${pg}`).classList.add('active');
+      if(pg==='cashflow')renderCFCharts();
+    };
+  });
+  document.getElementById('psel').onchange=e=>{if(e.target.value)loadProj(e.target.value);};
+  // Wizard modal butonları
+  document.getElementById('npbtn').onclick=()=>{
+    // Reset form to defaults before showing
+    var defmap={'w-isv':'','w-prj':'','w-il':'','w-ilc':'',
+      'w-dc':'1','w-ac':'1','w-pg':'625','w-ig':'350','w-ia':'3',
+      'w-ts':'1','w-cv':'400','w-al':'10000','w-bas':'2026-01-01',
+      'w-sur':'180','w-usd':'43.51','w-eur':'51.52','w-cont':'1'};
+    if(PD&&PD.settings){
+      var s=PD.settings;
+      defmap['w-usd']=String(s.usd||43.51);
+      defmap['w-eur']=String(s.eur||51.52);
+      defmap['w-cont']=String(s.contingency||1);
+    }
+    Object.keys(defmap).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.value=defmap[id];
+    });
+    document.getElementById('wiz-modal').style.display='flex';
+    wizCalc();
+    setTimeout(function(){document.getElementById('w-isv').focus();},100);
+  };
+  document.getElementById('wiz-cancel').onclick=()=>document.getElementById('wiz-modal').style.display='none';
+  document.getElementById('wiz-create').onclick=async()=>{
+    const isv=(document.getElementById('w-isv').value||'').trim()||'İşveren';
+    const prj=(document.getElementById('w-prj').value||'').trim()||'GES Projesi';
+    const il =(document.getElementById('w-il').value||'').trim();
+    const ilc=(document.getElementById('w-ilc').value||'').trim();
+    const dc =parseFloat(document.getElementById('w-dc').value)||1;
+    const ac =parseFloat(document.getElementById('w-ac').value)||dc;
+    const pg =parseFloat(document.getElementById('w-pg').value)||625;
+    const ig =parseFloat(document.getElementById('w-ig').value)||350;
+    const ia =parseFloat(document.getElementById('w-ia').value)||3;
+    const ts =parseFloat(document.getElementById('w-ts').value)||1;
+    const cv =parseFloat(document.getElementById('w-cv').value)||400;
+    const al =parseFloat(document.getElementById('w-al').value)||10000;
+    const bas=(document.getElementById('w-bas').value)||'2026-01-01';
+    const sur=parseFloat(document.getElementById('w-sur').value)||180;
+    const usd=parseFloat(document.getElementById('w-usd').value)||43.51;
+    const eur=parseFloat(document.getElementById('w-eur').value)||51.52;
+    const cont=parseFloat(document.getElementById('w-cont').value)||1;
+    const pa=Math.round(dc*1e6/pg);
+    const projName=`${isv} — ${dc} MWp — ${il||prj}`;
+    const ws={
+      projName,
+      isveren:isv,projeAdi:prj,il:il,ilce:ilc,
+      dcGuc:dc,acGuc:ac,panelGuc:pg,panelAdet:pa,
+      invGuc:ig,invAdet:ia,trafoSayisi:ts,cevreTelcit:cv,projeAlani:al,
+      baslangic:bas,sure:sur,usd,eur,contingency:cont,
+      genelGider:DEF_S.genelGider,netKar:DEF_S.netKar,
+      krediFaiz:DEF_S.krediFaiz,mevduat:DEF_S.mevduat,
+      panelAlts:JSON.parse(JSON.stringify(DEF_S.panelAlts)),
+      konstrAlts:JSON.parse(JSON.stringify(DEF_S.konstrAlts)),
+      invAlts:JSON.parse(JSON.stringify(DEF_S.invAlts)),
+      selPanel:0,selKonstr:0,selInv:0,
+      notes:[...DEF_S.notes],risks:[]
+    };
+    const btn=document.getElementById('wiz-create');
+    btn.textContent='⏳ Oluşturuluyor...'; btn.disabled=true;
+    try{
+      await createProj(ws);
+      document.getElementById('wiz-modal').style.display='none';
+      toast('✓ Teklif oluşturuldu — Keşif-A formüllendi!','success');
+    }catch(err){
+      var errMsg='Hata: '+(err&&err.message?err.message:String(err));
+      alert(errMsg);
+      console.error('createProj error:',err);
+    }finally{
+      btn.textContent='✓ Teklif Oluştur & Formülle'; btn.disabled=false;
+    }
+  };
+  document.getElementById('ka-save').onclick=()=>{updateDynKA();updateDynKB();renderKA();renderDash();saveProj();toast('✓ Keşif-A kaydedildi','success');};
+  document.getElementById('kb-save').onclick=()=>{updateDynKB();renderDash();updKBTots();saveProj();toast('✓ Keşif-B kaydedildi','success');};
+  document.getElementById('tl-save').onclick=()=>{saveProj();};
+  document.getElementById('dor-save').onclick=()=>{saveProj();};
+  document.getElementById('set-save').onclick=()=>{collectSet();saveProj();};
+  document.getElementById('dor-add').onclick=()=>{if(!PD)return;PD.dor.push({name:'Yeni Kapsam',items:[{description:'',tedarik:'Yüklenici',montaj:'Yüklenici',devreAma:'Yüklenici',notes:''}]});renderDor();};
+  document.getElementById('add-n').onclick=()=>{if(!PD)return;if(!PD.settings.notes)PD.settings.notes=[];PD.settings.notes.push('');renderNE('nc',PD.settings.notes,'notes');};
+  document.getElementById('add-r').onclick=()=>{if(!PD)return;if(!PD.settings.risks)PD.settings.risks=[];PD.settings.risks.push('');renderNE('rc',PD.settings.risks,'risks');};
+}
+
+function renderPSel(){
+  const sel=document.getElementById('psel');sel.innerHTML='<option value="">— Teklif seçin —</option>';
+  projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+  if(projects.length>0&&!curProjId){const l=projects[projects.length-1];sel.value=l.id;loadProj(l.id);}
+}
+
+// ═══════════════════════════════════════════════════
+// CALCULATIONS
+// ═══════════════════════════════════════════════════
+const toUSD=(v,c,s)=>{const n=parseFloat(v)||0,u=parseFloat(s.usd)||43.51,r=parseFloat(s.eur)||51.52;if(c==='TL')return n/u;if(c==='EUR')return n*(r/u);return n;};
+const fromUSD=(u2,c,s)=>{const u=parseFloat(s.usd)||43.51,r=parseFloat(s.eur)||51.52;if(c==='TL')return u2*u;if(c==='EUR')return u2*(u/r);return u2;};
+const csym=c=>c==='TL'?'₺':c==='EUR'?'€':'$';
+
+function getGrpTot(group,s){
+  const sp=s.panelAlts[s.selPanel||0]?.price||0.185,sk=s.konstrAlts[s.selKonstr||0]?.price||31000,si=s.invAlts[s.selInv||0]?.price||7250;
+  return group.items.reduce((t,it)=>{let p=parseFloat(it.birimFiyat)||0;if(it.code==='A.1.1')p=sp;if(it.code==='A.3.1')p=sk;if(it.code==='A.2.1')p=si;return t+(parseFloat(it.miktar)||0)*p;},0);
+}
+function getKAT(data,s){return(data||[]).reduce((t,g)=>t+getGrpTot(g,s),0);}
+function getKBT(data){
+  // Exclude B.6 (Proje Finans Maliyeti) from cost base — it's informational, calculated AFTER sales price
+  return(data||[]).reduce((t,g)=>t+g.items.reduce((s,it)=>{
+    if(it.code&&it.code.startsWith('B.6')) return s; // exclude B.6
+    return s+(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0);
+  },0),0);
+}
+
+function calc(){
+  if(!PD)return null;
+  const s=PD.settings;
+  const A=getKAT(PD.kesifData,s),B=getKBT(PD.kesifBData);
+  const cR=(parseFloat(s.contingency)||1)/100,C=(A+B)*cR;
+  const tot=A+B+C,ggR=(parseFloat(s.genelGider)||9)/100,nkR=(parseFloat(s.netKar)||3)/100,brR=ggR+nkR;
+  const sat=tot/(1-brR),brK=sat*brR,ggK=sat*ggR,nkK=sat*nkR;
+  const dc=parseFloat(s.dcGuc)||39,tWp=dc*1e6,usdR=parseFloat(s.usd)||43.51;
+  return{A,B,C,tot,sat,brK,ggK,nkK,brR,ggR,nkR,cR,dc,tWp,usdR};
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════════
+function renderAll(){
+  if(!PD)return;
+  autoScaleTL(); calcRowCosts(); updateDynKA(); updateDynKB(); // update + rescale before rendering
+  const s=PD.settings;
+  document.getElementById('dtitle').textContent=`${s.isveren||''} — ${s.projeAdi||''} — ${s.dcGuc||''} MWp`;
+  document.getElementById('psel').value=curProjId;
+  renderDash();renderKA();renderKB();renderBoQ();renderTL();renderDor();renderSet();
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════
+function renderDash(){
+  if(!PD)return;
+  // Update B.6 Proje Finans Maliyeti = kümülatif finans son değeri
+  try{
+    const cfData=calcCF();
+    if(cfData){
+      // cumFin: negatif = net maliyet, pozitif = net gelir
+      // B.6'ya: maliyet ise pozitif rakam, gelir ise negatif rakam
+      const finCum=cfData.cumFin;
+      const b6val=parseFloat((-finCum).toFixed(2)); // invert: cost→+, income→-
+      (PD.kesifBData||[]).forEach(function(g){g.items.forEach(function(it){
+        if(it.code==='B.6.1'){
+          it.birimFiyat=b6val;
+          it.rawFiyat=b6val;
+          it.notlar=finCum<0
+            ?'Proje finans yükü (kredi maliyeti): '+fmtUSD(Math.abs(finCum))
+            :'Proje finans geliri (mevduat): '+fmtUSD(finCum);
+        }
+      });});
+    }
+  }catch(e2){console.warn('B6 calc error:',e2);}
+  const f=calc();if(!f)return;
+  const s=PD.settings;
+  document.getElementById('d-sat').textContent=fmtUSD(f.sat);
+  const eu2=(parseFloat(s.eur)||51.52)/(parseFloat(s.usd)||43.51);
+  const wpUSD=(f.sat/f.tWp).toFixed(4),wpEUR=(f.sat/eu2/f.tWp).toFixed(4),wpTL=((f.sat*f.usdR)/f.tWp).toFixed(2);
+  document.getElementById('d-sat-wp').textContent=wpUSD+' USD/Wp';
+  const dSatEur=document.getElementById('d-sat-eur');if(dSatEur)dSatEur.textContent=wpEUR+' EUR/Wp';
+  const dSatTl=document.getElementById('d-sat-tl');if(dSatTl)dSatTl.textContent=wpTL+' TL/Wp';
+  document.getElementById('d-guc').textContent=`${f.dc} MWp / ${s.acGuc||'—'} MW`;
+  document.getElementById('d-usdmwp').innerHTML='<strong style="font-size:13px;font-weight:800;color:var(--pr)">'+fmtUSDs(f.sat/f.dc)+'/MW</strong>';
+  document.getElementById('d-kar').textContent=fmtUSD(f.brK);
+  document.getElementById('d-kar-pct').textContent=`%${(f.brR*100).toFixed(1)} Brüt Kâr`;
+  document.getElementById('d-kar-wp').innerHTML=`<strong style="font-size:13px;font-weight:800;color:var(--gr)">${(f.brK/f.tWp).toFixed(4)} USD/Wp</strong>`;
+  document.getElementById('d-mal').textContent=fmtUSD(f.tot);
+  document.getElementById('d-mal-s').textContent=`A:${fmtUSDs(f.A)} B:${fmtUSDs(f.B)}`;
+  document.getElementById('d-mal-wp').innerHTML=`<strong style="font-size:13px;font-weight:800;color:var(--tx)">${(f.tot/f.tWp).toFixed(4)} USD/Wp</strong>`;
+  document.getElementById('d-cont').value=s.contingency||1;
+  document.getElementById('d-gg').value=s.genelGider||9;
+  document.getElementById('d-nk').value=s.netKar||3;
+  const fEl=document.getElementById('d-faiz');if(fEl)fEl.value=s.krediFaiz||0;
+  const mEl=document.getElementById('d-mev');if(mEl)mEl.value=s.mevduat||0;
+  const dKm=document.getElementById('d-km');if(dKm)dKm.value=s.karMarji||0;
+  const dMv=document.getElementById('d-mv');if(dMv)dMv.value=s.mevduat||0;
+  renderCritOpts();renderIcmal(f);renderDashCharts(f);
+  document.getElementById('d-info').innerHTML=[['İşveren',s.isveren||'—'],['İl/İlçe',`${s.il||'—'} / ${s.ilce||'—'}`],['DC Güç',`${s.dcGuc||'—'} MWp`],['AC Güç',`${s.acGuc||'—'} MW`],['Panel',`${s.panelGuc||'—'} Wp × ${(s.panelAdet||0).toLocaleString('tr-TR')}`],['İnverter',`${s.invGuc||'—'} kW × ${s.invAdet||'—'}`],['Başlangıç',s.baslangic||'—'],['Süre',`${s.sure||'—'} gün`],['USD/TL',s.usd||'—'],['EUR/TL',s.eur||'—']].map(([l,v])=>`<div class="ii2"><span class="il">${l}:</span><span class="iv">${v}</span></div>`).join('');
+  const notesHTML=(s.notes||[]).map((n,i)=>`<div class="ni2"><span style="color:var(--pr);font-weight:700;min-width:18px;font-size:11px">${i+1}.</span><span style="font-size:12px">${n}</span></div>`).join('');
+  const dNotes=document.getElementById('d-notes');if(dNotes)dNotes.innerHTML=notesHTML;
+  const dNotesSide=document.getElementById('d-notes-side');if(dNotesSide)dNotesSide.innerHTML=notesHTML;
+  // Risks section
+  const risks=s.risks||[];
+  const risksSection=document.getElementById('d-risks-section');
+  if(risksSection) risksSection.style.display=risks.length>0?'block':'none';
+  const risksHTML=risks.map((r,i)=>`<div class="ni2"><span style="color:var(--re);font-weight:700;min-width:18px;font-size:11px">${i+1}.</span><span style="font-size:12px">${r}</span></div>`).join('');
+  const dRisksSide=document.getElementById('d-risks-side');if(dRisksSide)dRisksSide.innerHTML=risksHTML;
+}
+
+function applyParams(){
+  if(!PD)return;
+  PD.settings.contingency=parseFloat(document.getElementById('d-cont')?.value)||1;
+  PD.settings.genelGider=parseFloat(document.getElementById('d-gg')?.value)||9;
+  PD.settings.netKar=parseFloat(document.getElementById('d-nk')?.value)||3;
+  PD.settings.krediFaiz=parseFloat(document.getElementById('d-faiz')?.value)||0;
+  PD.settings.mevduat=parseFloat(document.getElementById('d-mev')?.value)||0;
+  updateDynKA(); updateDynKB();
+  const el=document.getElementById('params-result');
+  if(el){el.textContent='✓ Uygulandı';el.style.color='var(--gr)';setTimeout(()=>{el.textContent='';},2500);}
+  PD.settings.contingency=parseFloat(document.getElementById('d-cont').value)||1;
+  PD.settings.genelGider=parseFloat(document.getElementById('d-gg').value)||9;
+  PD.settings.netKar=parseFloat(document.getElementById('d-nk').value)||3;
+  const kmEl=document.getElementById('d-km');if(kmEl)PD.settings.karMarji=parseFloat(kmEl.value)||0;
+  const mvEl=document.getElementById('d-mv');if(mvEl)PD.settings.mevduat=parseFloat(mvEl.value)||0;
+  renderDash();renderKA();renderKB();saveProj();
+}
+
+function renderCritOpts(){
+  const s=PD.settings;
+  [{id:'cp',alts:s.panelAlts,key:'selPanel',code:'A.1.1'},{id:'ck',alts:s.konstrAlts,key:'selKonstr',code:'A.3.1'},{id:'ci',alts:s.invAlts,key:'selInv',code:'A.2.1'}].forEach(({id,alts,key,code})=>{
+    const el=document.getElementById(id);el.innerHTML='';
+    (alts||[]).forEach((a,i)=>{
+      const d=document.createElement('div');d.className='copt'+(i===(s[key]||0)?' sel':'');
+      d.innerHTML=`<div class="cdot"></div><span class="cname">${a.name}</span><span class="cprice">${a.price>0?a.price.toLocaleString('tr-TR'):'—'}</span>`;
+      d.onclick=()=>{s[key]=i;(PD.kesifData||[]).forEach(g=>g.items.forEach(it=>{if(it.code===code){it.birimFiyat=a.price;it.rawFiyat=a.price;}}));renderDash();renderKA();};
+      el.appendChild(d);
+    });
+  });
+}
+
+
+function pctColor(pct){
+  const v=parseFloat(pct)||0;
+  if(v>=20) return '#dc2626'; // deep red
+  if(v>=10) return '#f97316'; // orange
+  if(v>=5)  return '#f59e0b'; // amber
+  if(v>=2)  return '#3b82f6'; // blue
+  return '#94a3b8'; // gray (small items)
+}
+function pctBg(pct){
+  const v=parseFloat(pct)||0;
+  if(v>=20) return 'rgba(220,38,38,.08)';
+  if(v>=10) return 'rgba(249,115,22,.07)';
+  if(v>=5)  return 'rgba(245,158,11,.07)';
+  if(v>=2)  return 'rgba(59,130,246,.06)';
+  return 'transparent';
+}
+function renderIcmal(f){
+  const s=PD.settings,tWp=f.tWp,sat=f.sat;
+  const pctCell=(p,bold=false)=>{
+    const pv=parseFloat(p)||0;
+    let clr='#94a3b8',bg='transparent';
+    if(pv>=20){clr='#dc2626';bg='rgba(220,38,38,.1)';}
+    else if(pv>=10){clr='#f97316';bg='rgba(249,115,22,.08)';}
+    else if(pv>=5){clr='#f59e0b';bg='rgba(245,158,11,.08)';}
+    else if(pv>=2){clr='#3b82f6';bg='rgba(59,130,246,.07)';}
+    const w=bold?'800':'600';
+    return `<td style="text-align:center;"><span style="display:inline-block;min-width:52px;padding:2px 7px;border-radius:12px;background:${bg};color:${clr};font-weight:${w};font-size:11px;">%${p}</span></td>`;
+  };
+  let h=`<thead><tr>
+    <th style="width:38px">No</th>
+    <th>İş Kalemi</th>
+    <th style="width:190px;text-align:right">Toplam Maliyet (USD)</th>
+    <th style="width:100px;text-align:center">Satış %</th>
+  </tr></thead><tbody>`;
+  let aT=0;
+  (PD.kesifData||[]).forEach(g=>{
+    const gt=getGrpTot(g,s);aT+=gt;
+    const p=sat>0?(gt/sat*100).toFixed(2):'0',wp=(gt/tWp).toFixed(4);
+    h+=`<tr class="ra"><td class="tdc">${g.code}</td><td style="font-weight:500">${g.name}</td><td style="text-align:right;font-weight:600">${fmtUSD(gt)}<span class="iwp">${wp} USD/Wp</span></td>${pctCell(p)}</tr>`;
+  });
+  const aPct=sat>0?(aT/sat*100).toFixed(1):'0';
+  h+=`<tr class="rsub"><td colspan="2"><strong>A — Direkt Giderler</strong></td><td style="text-align:right;color:var(--pr);font-weight:700">${fmtUSD(aT)}<span class="iwp">${(aT/tWp).toFixed(4)} USD/Wp</span></td>${pctCell(aPct,true)}</tr>`;
+  let bT=0;
+  (PD.kesifBData||[]).forEach(g=>{
+    const gt=g.items.reduce((s,it)=>(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0)+s,0);bT+=gt;
+    const pb=sat>0?(gt/sat*100).toFixed(2):'0';
+    h+=`<tr class="rb"><td class="tdc">${g.code}</td><td style="font-weight:500">${g.name}</td><td style="text-align:right;font-weight:600">${fmtUSD(gt)}<span class="iwp">${(gt/tWp).toFixed(4)} USD/Wp</span></td>${pctCell(pb)}</tr>`;
+  });
+  const bPct=sat>0?(bT/sat*100).toFixed(1):'0';
+  h+=`<tr class="rsub"><td colspan="2"><strong>B — Endirekt Giderler</strong></td><td style="text-align:right;color:var(--pu);font-weight:700">${fmtUSD(bT)}<span class="iwp">${(bT/tWp).toFixed(4)} USD/Wp</span></td>${pctCell(bPct,true)}</tr>`;
+  const cPct=sat>0?(f.C/sat*100).toFixed(1):'0';
+  h+=`<tr class="rsub"><td>C</td><td><strong>Contingency (%${s.contingency||1})</strong></td><td style="text-align:right;color:var(--am)">${fmtUSD(f.C)}<span class="iwp">${(f.C/tWp).toFixed(4)} USD/Wp</span></td>${pctCell(cPct,true)}</tr>`;
+  const totPct=sat>0?(f.tot/sat*100).toFixed(1):'0';
+  h+=`<tr style="background:var(--bg);"><td colspan="2" style="font-weight:800">A+B+C — Genel Maliyet</td><td style="text-align:right;font-size:13px;font-weight:800">${fmtUSD(f.tot)}<span class="iwp">${(f.tot/tWp).toFixed(4)} USD/Wp</span></td>${pctCell(totPct,true)}</tr>`;
+  h+=`<tr><td>D</td><td>Genel Gider (%${s.genelGider||9})</td><td style="text-align:right">${fmtUSD(f.ggK)}<span class="iwp">${(f.ggK/tWp).toFixed(4)} USD/Wp</span></td>${pctCell((f.ggR*100).toFixed(1),false)}</tr>`;
+  h+=`<tr><td>E</td><td>Hedef Net Kâr (%${s.netKar||3})</td><td style="text-align:right">${fmtUSD(f.nkK)}<span class="iwp">${(f.nkK/tWp).toFixed(4)} USD/Wp</span></td>${pctCell((f.nkR*100).toFixed(1),false)}</tr>`;
+  h+=`<tr class="rsub"><td>D+E</td><td><strong>Brüt Kâr</strong></td><td style="text-align:right;color:var(--gr)">${fmtUSD(f.brK)}<span class="iwp">${(f.brK/tWp).toFixed(4)} USD/Wp</span></td><td style="text-align:center"><span style="display:inline-block;min-width:52px;padding:2px 7px;border-radius:12px;background:rgba(16,185,129,.1);color:#10b981;font-weight:800;font-size:11px;">%${(f.brR*100).toFixed(1)}</span></td></tr>`;
+  // B.6 informational row
+  let b6Val=0;
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.6.1') b6Val=(parseFloat(it.birimFiyat)||0);
+  }));
+  if(b6Val!==0){
+    const b6Label=b6Val>0?'B.6 Proje Finans Yükü (Kredi Maliyeti)':'B.6 Proje Finans Geliri (Mevduat)';
+    const b6Color=b6Val>0?'var(--re)':'var(--gr)';
+    h+=`<tr style="background:#fafafa;border-top:2px solid var(--bd)">
+      <td style="color:var(--tx3);font-size:11px">B.6</td>
+      <td style="color:${b6Color};font-size:11px;font-style:italic">${b6Label}</td>
+      <td style="text-align:right;color:${b6Color};font-size:11px">${fmtUSD(b6Val)}</td>
+      <td style="text-align:center"><span style="font-size:10px;color:var(--tx3)">bilgi</span></td>
+    </tr>`;
+  }
+  h+=`<tr class="rtot"><td colspan="2" style="font-size:13px;font-weight:800;padding:8px">☀ SATIŞ FİYATI (USD)</td><td style="text-align:right;font-size:14px;font-weight:800">${fmtUSD(sat)}<span style="font-size:10px;font-style:italic;color:rgba(255,255,255,.7);display:block">${(sat/tWp).toFixed(4)} USD/Wp</span></td><td style="text-align:center;font-weight:800;color:#fff">%100</td></tr>`;
+  const eu=(parseFloat(s.eur)||51.52)/(parseFloat(s.usd)||43.51);
+  h+=`<tr style="background:#f0fdf4"><td colspan="2" style="color:var(--gr);font-weight:600">Satış Fiyatı — EUR</td><td style="text-align:right;color:var(--gr);font-weight:700">${new Intl.NumberFormat('tr-TR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(sat/eu)}<span class="iwp">${(sat/eu/tWp).toFixed(4)} EUR/Wp</span></td><td></td></tr>`;
+  h+=`<tr style="background:#eff6ff"><td colspan="2" style="color:var(--pr);font-weight:600">Satış Fiyatı — TL</td><td style="text-align:right;color:var(--pr);font-weight:700">${fmtTL(sat*(parseFloat(s.usd)||43.51))}<span class="iwp">${((sat*(parseFloat(s.usd)||43.51))/tWp).toFixed(2)} TL/Wp</span></td><td></td></tr>`;
+  h+='</tbody>';
+  document.getElementById('icmal-tbl').innerHTML=h;
+}
+
+
+function renderDashCharts(f){
+  const {labels,inflow,outflow,cumulative,finance}=calcCF();
+  const c1=document.getElementById('d-cf')?.getContext('2d');
+  if(c1){if(dCfCh)dCfCh.destroy();
+    dCfCh=new Chart(c1,{type:'bar',data:{labels,datasets:[
+      {label:'Gelir',data:inflow,backgroundColor:'rgba(16,185,129,.65)',borderColor:'#10b981',borderWidth:1,borderRadius:4,order:2},
+      {label:'Gider',data:outflow.map(v=>-v),backgroundColor:'rgba(239,68,68,.65)',borderColor:'#ef4444',borderWidth:1,borderRadius:4,order:2},
+      {label:'Kümülatif Pozitif',data:cumulative.map(v=>v>=0?v:null),type:'line',borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:{value:0},tension:0.3,pointRadius:4,borderWidth:2.5,spanGaps:false,order:1},
+      {label:'Kümülatif Negatif',data:cumulative.map(v=>v<0?v:null),type:'line',borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.08)',fill:{value:0},tension:0.3,pointRadius:4,borderWidth:2.5,spanGaps:false,order:1},
+      {label:'Kümülatif',data:cumulative,type:'line',borderColor:'#64748b',borderWidth:1,borderDash:[4,3],tension:0.3,pointRadius:2,fill:false,order:1}
+    ]},options:{...chOpts('Cash Flow'),scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#94a3b8',font:{size:10},callback:v=>fmtUSDs(v)},grid:{color:'rgba(0,0,0,.04)'}}}}});
+  }
+  const c2=document.getElementById('d-pie')?.getContext('2d');
+  if(c2&&PD){
+    if(dPieCh)dPieCh.destroy();
+    const s=PD.settings,kd=PD.kesifData||[];
+    const labs=kd.map(g=>`${g.code} ${g.name.substring(0,12)}`),data=kd.map(g=>getGrpTot(g,s));
+    const tot=data.reduce((a,b)=>a+b,0);
+    const cls=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#84cc16','#f97316','#ec4899','#6366f1','#14b8a6','#a855f7','#22c55e','#eab308','#0ea5e9','#f43f5e','#64748b','#d946ef'];
+    const hiddenIdxs=new Set();
+    dPieCh=new Chart(c2,{type:'doughnut',data:{labels:labs,datasets:[{data,backgroundColor:[...cls.slice(0,data.length)],borderWidth:2,borderColor:'#fff'}]},
+      options:{plugins:{legend:{position:'right',
+        onClick:(e,item,legend)=>{
+          const i=item.index,bgArr=dPieCh.data.datasets[0].backgroundColor;
+          if(hiddenIdxs.has(i)){hiddenIdxs.delete(i);bgArr[i]=cls[i%cls.length];}
+          else{hiddenIdxs.add(i);bgArr[i]='rgba(200,200,200,0.2)';}
+          dPieCh.update();
+        },
+        labels:{color:'#475569',font:{size:10},boxWidth:10,
+          generateLabels:(ch)=>ch.data.labels.map((lb,i)=>{
+            const hi=hiddenIdxs.has(i);
+            return{text:`${lb}: %${tot>0?(data[i]/tot*100).toFixed(1):'0'}`,
+              fillStyle:hi?'#e2e8f0':cls[i%cls.length],
+              strokeStyle:hi?'#e2e8f0':cls[i%cls.length],
+              lineWidth:1,index:i,
+              fontColor:hi?'#d1d5db':'#475569',
+              hidden:false};
+          })
+        }
+      },tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${fmtUSD(ctx.parsed)} (%${tot>0?(ctx.parsed/tot*100).toFixed(1):'0'})`}}},cutout:'60%'}})
+  }
+}
+
+function printDash(){
+  if(!PD)return;const s=PD.settings,tbl=document.getElementById('icmal-tbl')?.innerHTML||'';
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GES TEKLİF - Dashboard</title>
+  <style>body{font-family:Arial,sans-serif;font-size:11px;margin:15mm}h1{font-size:16px;color:#1e3a5f;margin-bottom:4px}.sub{color:#666;font-size:10px;margin-bottom:14px}table{width:100%;border-collapse:collapse}th{background:#1e3a5f;color:#fbbf24;padding:7px;text-align:left;font-size:10px}td{padding:5px 7px;border-bottom:1px solid #e5e7eb;font-size:11px}.rtot td{background:#1e3a5f;color:#fff!important;font-weight:700}.rsub td{background:#f1f5f9;font-weight:700}.iwp{display:block;font-size:9px;color:#94a3b8}@media print{@page{size:A4;margin:12mm}}</style></head><body>
+  <h1>☀ GES TEKLİF — İcmal Raporu</h1>
+  <div class="sub">${s.isveren||''} | ${s.projeAdi||''} | ${s.il||''} ${s.ilce||''} | ${s.dcGuc||''} MWp | ${new Date().toLocaleDateString('tr-TR')}</div>
+  <table>${tbl}</table></body></body></html>`);w.document.close();
+  w.onload=()=>{w.focus();w.print();};
+}
+
+// ═══════════════════════════════════════════════════
+// KESİF-A
+// ═══════════════════════════════════════════════════
+function renderKA(){
+  if(!PD)return;
+  const cont=document.getElementById('ka-cont');cont.innerHTML='';
+  const s=PD.settings,sp=s.panelAlts[s.selPanel||0]?.price||0.185,sk=s.konstrAlts[s.selKonstr||0]?.price||31000,si=s.invAlts[s.selInv||0]?.price||7250,tWp=(parseFloat(s.dcGuc)||39)*1e6;
+  (PD.kesifData||[]).forEach((g,gi)=>{
+    const gt=getGrpTot(g,s);
+    const div=document.createElement('div');div.className='acc';
+    div.className='acc acc-ka';div.innerHTML=`<div class="ach"><span class="aarr">▶</span><span class="acode">${g.code}</span><span class="aname acc-grp-title">${g.name}</span><span style="margin-left:auto;text-align:right"><span class="atot" id="ka-gtot-${gi}">${fmtUSD(gt)}</span><span class="awp" style="display:block">${(gt/tWp).toFixed(4)} USD/Wp</span></span></div>
+    <div class="abody"><div style="overflow-x:auto"><table class="dt" style="table-layout:fixed;width:100%">
+    <colgroup><col style="width:58px"><col style="min-width:180px"><col style="min-width:130px"><col style="min-width:110px"><col style="width:44px"><col style="width:78px"><col style="width:42px"><col style="width:116px"><col style="width:74px"><col style="width:100px"><col style="width:60px"><col style="min-width:90px"><col style="width:22px"></colgroup>
+    <thead><tr>
+  <th style="width:58px">Kod</th>
+  <th style="min-width:180px;text-align:left">Tanım</th>
+  <th style="min-width:130px;text-align:left">Tip/Model</th>
+  <th style="min-width:110px;text-align:left">Marka</th>
+  <th style="width:44px;text-align:center">Br.</th>
+  <th style="width:78px;text-align:right">Miktar</th>
+  <th style="width:42px;text-align:center">Kur</th>
+  <th style="width:116px;text-align:right">Br.Fiyat</th>
+  <th style="width:74px;text-align:right">USD</th>
+  <th style="width:100px;text-align:right">Toplam</th>
+  <th style="width:60px;text-align:right">$/Wp</th>
+  <th style="min-width:90px;text-align:left">Not</th>
+  <th style="width:22px"></th>
+</tr></thead>
+    <tbody id="ka-tb-${gi}">${g.items.map((it,ii)=>kaRow(it,gi,ii,sp,sk,si,tWp,s)).join('')}</tbody>
+    </table></div>
+    <div style="padding:8px 16px"><button class="btn btn-g btn-sm ka-add" data-gi="${gi}">＋ Kalem Ekle</button></div>
+    </div>`;
+    div.querySelector('.ach').onclick=()=>div.classList.toggle('open');
+    div.querySelector('.ka-add').onclick=e=>{const gi2=parseInt(e.target.dataset.gi);PD.kesifData[gi2].items.push({code:`${g.code}.yeni`,tanim:'Yeni Kalem',tip:'',marka:'',birim:'adet',miktar:0,birimFiyat:0,fiyatCur:'USD',rawFiyat:0,notlar:''});renderKA();};
+    cont.appendChild(div);
+    attachKA(div,gi,sp,sk,si,tWp,s);
+  });
+  updKATots();
+}
+
+function kaRow(it,gi,ii,sp,sk,si,tWp,s){
+  const isCr=['A.1.1','A.2.1','A.3.1'].includes(it.code);
+  let usd=parseFloat(it.birimFiyat)||0;
+  if(it.code==='A.1.1')usd=sp;if(it.code==='A.3.1')usd=sk;if(it.code==='A.2.1')usd=si;
+  const rt=(parseFloat(it.miktar)||0)*usd,cur=it.fiyatCur||'USD',raw=it.rawFiyat!==undefined?it.rawFiyat:usd;
+  return `<tr style="vertical-align:middle;border-bottom:1px solid var(--bg3)">
+    <td style="padding-top:6px"><input class="ii ka-code" data-gi="${gi}" data-ii="${ii}" value="${it.code}" style="width:54px;font-size:11px"></td>
+    <td class="wrap-cell" title="${it.tanim}"><input class="ii ka-tan wrap" data-gi="${gi}" data-ii="${ii}" value="${it.tanim}" style="width:100%;font-weight:500" title="${it.tanim}"></td>
+    <td class="wrap-cell" title="${it.tip||''}""><input class="ii ka-tip wrap" data-gi="${gi}" data-ii="${ii}" value="${it.tip||''}" style="width:100%" title="${it.tip||''}"></td>
+    <td class="wrap-cell" title="${it.marka||''}""><input class="ii ka-mrk wrap" data-gi="${gi}" data-ii="${ii}" value="${it.marka||''}" style="width:100%" title="${it.marka||''}"></td>
+    <td><input class="ii ka-brm" data-gi="${gi}" data-ii="${ii}" value="${it.birim||''}" style="width:40px;text-align:center"></td>
+    <td><input type="number" class="ii ka-mik" data-gi="${gi}" data-ii="${ii}" value="${it.miktar}" style="width:75px;text-align:right"></td>
+    <td>${isCr?`<span style="font-size:10px;color:var(--pr);font-weight:700">AUTO</span>`:`<select class="csel ka-cur" data-gi="${gi}" data-ii="${ii}"><option value="USD" ${cur==='USD'?'selected':''}>USD</option><option value="TL" ${cur==='TL'?'selected':''}>TL</option><option value="EUR" ${cur==='EUR'?'selected':''}>EUR</option></select>`}</td>
+    <td style="padding:4px;vertical-align:middle"><div style="display:flex;align-items:center;gap:2px;white-space:nowrap">${isCr?`<span style="font-size:11px;font-weight:700;color:var(--pr)">${usd} Auto</span>`:`<input type="number" class="ii ka-fiy" data-gi="${gi}" data-ii="${ii}" value="${raw}" step="any" style="width:94px;text-align:right;font-size:11px;flex-shrink:0"><span class="ka-fiy-sym" style="font-size:10px;color:var(--tx3);flex-shrink:0">${csym(cur)}</span>`}</div></td>
+    <td style="font-size:10px;color:var(--tx3)">${isCr?'':`${usd.toFixed(4)} $`}</td>
+    <td class="tdt" id="ka-r-${gi}-${ii}">${fmtUSD(rt)}<span class="tdwp">${(rt/tWp).toFixed(4)} $/Wp</span></td>
+    <td style="font-size:11px;color:var(--pr);font-weight:600">${(rt/tWp).toFixed(4)}</td>
+    <td><input class="ii ka-not" data-gi="${gi}" data-ii="${ii}" value="${it.notlar||''}" style="width:100%;font-size:11px"></td>
+    <td><button class="btn btn-d ka-del" data-gi="${gi}" data-ii="${ii}">✕</button></td>
+  </tr>`;
+}
+
+function attachKA(cont,gi,sp,sk,si,tWp,s){
+  const upd=(gi2,ii2)=>{
+    const it=PD.kesifData[gi2].items[ii2];let p=parseFloat(it.birimFiyat)||0;
+    if(it.code==='A.1.1')p=sp;if(it.code==='A.3.1')p=sk;if(it.code==='A.2.1')p=si;
+    const t=(parseFloat(it.miktar)||0)*p,el=document.getElementById(`ka-r-${gi2}-${ii2}`);
+    if(el)el.innerHTML=`${fmtUSD(t)}<span class="tdwp">${(t/tWp).toFixed(4)} $/Wp</span>`;
+    // Update group header total
+    const grpTot=getGrpTot(PD.kesifData[gi2],s);
+    const gEl=document.getElementById(`ka-gtot-${gi2}`);
+    if(gEl)gEl.textContent=fmtUSD(grpTot);
+    updKATots();
+    renderDash();
+  };
+  cont.querySelectorAll('.ka-code').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].code=e.target.value;});
+  cont.querySelectorAll('.ka-tan').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].tanim=e.target.value;});
+  cont.querySelectorAll('.ka-tip').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].tip=e.target.value;});
+  cont.querySelectorAll('.ka-mrk').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].marka=e.target.value;});
+  cont.querySelectorAll('.ka-brm').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].birim=e.target.value;});
+  cont.querySelectorAll('.ka-not').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].notlar=e.target.value;});
+  // Auto-resize textareas + save on change
+  const resizeTa=ta=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';};
+  cont.querySelectorAll('.ii-ta').forEach(ta=>{
+    resizeTa(ta);
+    ta.addEventListener('input',function(){resizeTa(this);});
+  });
+  cont.querySelectorAll('.ka-mik').forEach(i=>i.oninput=e=>{PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii].miktar=parseFloat(e.target.value)||0;upd(+e.target.dataset.gi,+e.target.dataset.ii);});
+  cont.querySelectorAll('.ka-cur').forEach(sel=>sel.onchange=e=>{
+    const it=PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii];
+    const oldCur=it.fiyatCur||'USD';
+    it.fiyatCur=e.target.value;
+    // Mevcut USD fiyatı koruyarak yeni para biriminde raw fiyatı güncelle
+    it.rawFiyat=fromUSD(it.birimFiyat||0,it.fiyatCur,s);
+    // Sadece o satırın fiyat input ve span'ını güncelle, sayfayı sıfırlama
+    const row=e.target.closest('tr');
+    if(row){
+      const fiyInp=row.querySelector('.ka-fiy');if(fiyInp)fiyInp.value=it.rawFiyat;
+      const symSpan=row.querySelector('.ka-fiy+span');if(symSpan)symSpan.textContent=csym(it.fiyatCur);
+    }
+    upd(+e.target.dataset.gi,+e.target.dataset.ii);
+  });
+  cont.querySelectorAll('.ka-fiy').forEach(i=>i.oninput=e=>{
+    const it=PD.kesifData[+e.target.dataset.gi].items[+e.target.dataset.ii];
+    it.rawFiyat=parseFloat(e.target.value)||0;it.birimFiyat=toUSD(it.rawFiyat,it.fiyatCur||'USD',s);upd(+e.target.dataset.gi,+e.target.dataset.ii);
+  });
+  cont.querySelectorAll('.ka-del').forEach(b=>b.onclick=e=>{PD.kesifData[+e.target.dataset.gi].items.splice(+e.target.dataset.ii,1);renderKA();});
+}
+
+function updKATots(){
+  if(!PD)return;const f=calc();if(!f)return;
+  const el=document.getElementById('ka-tots');el.style.display='grid';
+  el.innerHTML=`<div class="tgrid">
+    <div><div class="tl">A — Direkt Giderler</div><div class="tv" style="color:var(--pr)">${fmtUSD(f.A)}</div><div class="twp">${(f.A/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">B — Endirekt Giderler</div><div class="tv" style="color:var(--pu)">${fmtUSD(f.B)}</div><div class="twp">${(f.B/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">C — Contingency (%${PD.settings.contingency||1})</div><div class="tv" style="color:var(--am)">${fmtUSD(f.C)}</div><div class="twp">${(f.C/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Genel Maliyet (A+B+C)</div><div class="tv">${fmtUSD(f.tot)}</div><div class="twp">${(f.tot/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Satış Fiyatı (USD)</div><div class="tv" style="color:var(--gr)">${fmtUSD(f.sat)}</div><div class="twp">${(f.sat/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Brüt Kâr (%${(f.brR*100).toFixed(0)})</div><div class="tv" style="color:var(--pu)">${fmtUSD(f.brK)}</div><div class="twp">${(f.brK/f.tWp).toFixed(4)} USD/Wp</div></div>
+  </div>`;
+}
+
+function exportKA(){
+  if(!PD)return;const s=PD.settings,tWp=(parseFloat(s.dcGuc)||39)*1e6,sp=s.panelAlts[s.selPanel||0]?.price||0.185,sk=s.konstrAlts[s.selKonstr||0]?.price||31000,si=s.invAlts[s.selInv||0]?.price||7250;
+  const rows=[['Kod','Tanım','Tip/Model','Marka','Birim','Miktar','Birim Fiyat (USD)','Toplam (USD)','USD/Wp','Not']];
+  (PD.kesifData||[]).forEach(g=>{rows.push([g.code,g.name,'','','','','','','','']);g.items.forEach(it=>{let p=parseFloat(it.birimFiyat)||0;if(it.code==='A.1.1')p=sp;if(it.code==='A.3.1')p=sk;if(it.code==='A.2.1')p=si;const t=(parseFloat(it.miktar)||0)*p;rows.push([it.code,it.tanim,it.tip||'',it.marka||'',it.birim,it.miktar,p,t,t/tWp,it.notlar||'']);});});
+  const f=calc();if(f){rows.push(['','','','','','','','','','']);rows.push(['A','Direkt Giderler','','','','','',f.A,f.A/tWp,'']);rows.push(['B','Endirekt Giderler','','','','','',f.B,f.B/tWp,'']);rows.push(['C','Contingency','','','','','',f.C,f.C/tWp,'']);rows.push(['A+B+C','Genel Maliyet','','','','','',f.tot,f.tot/tWp,'']);rows.push(['','Satış Fiyatı','','','','','',f.sat,f.sat/tWp,'']);rows.push(['','Brüt Kâr','','','','','',f.brK,f.brK/tWp,'']);}
+  const ws=XLSX.utils.aoa_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Keşif-A');XLSX.writeFile(wb,`GES_KesifA_${new Date().toLocaleDateString('tr-TR').replace(/\//g,'-')}.xlsx`);
+}
+
+function printKA(){
+  if(!PD)return;const s=PD.settings,sp=s.panelAlts[s.selPanel||0]?.price||0.185,sk=s.konstrAlts[s.selKonstr||0]?.price||31000,si=s.invAlts[s.selInv||0]?.price||7250,tWp=(parseFloat(s.dcGuc)||39)*1e6;
+  const w=window.open('','_blank');let rows='';
+  (PD.kesifData||[]).forEach(g=>{rows+=`<tr style="background:#1e3a5f"><td colspan="8" style="color:#fbbf24;font-weight:700;padding:6px 8px">${g.code} — ${g.name}</td></tr>`;
+    g.items.forEach(it=>{let p=parseFloat(it.birimFiyat)||0;if(it.code==='A.1.1')p=sp;if(it.code==='A.3.1')p=sk;if(it.code==='A.2.1')p=si;const t=(parseFloat(it.miktar)||0)*p;rows+=`<tr><td>${it.code}</td><td>${it.tanim}</td><td>${it.tip||''}</td><td>${it.marka||''}</td><td>${it.birim}</td><td style="text-align:right">${(parseFloat(it.miktar)||0).toLocaleString('tr-TR')}</td><td style="text-align:right">${p.toFixed(4)}</td><td style="text-align:right;font-weight:600">${fmtUSD(t)}</td></tr>`;});});
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Keşif-A</title><style>body{font-family:Arial,sans-serif;font-size:10px;margin:10mm}h1{font-size:14px;color:#1e3a5f}.sub{font-size:10px;color:#666;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#1e3a5f;color:#fbbf24;padding:5px 7px;font-size:9px}td{padding:4px 7px;border-bottom:1px solid #e5e7eb}tr:nth-child(even){background:#f8fafc}@media print{@page{size:A4 landscape;margin:10mm}}</style></head><body>
+  <h1>☀ GES TEKLİF — Keşif-A</h1><div class="sub">${s.isveren||''} | ${s.projeAdi||''} | ${s.dcGuc||''} MWp | ${new Date().toLocaleDateString('tr-TR')}</div>
+  <table><thead><tr><th>Kod</th><th>Tanım</th><th>Tip</th><th>Marka</th><th>Birim</th><th>Miktar</th><th>Birim Fiyat USD</th><th>Toplam USD</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></body></html>`);w.document.close();
+  w.onload=()=>{w.focus();w.print();};
+}
+
+// ═══════════════════════════════════════════════════
+// KESİF-B
+// ═══════════════════════════════════════════════════
+function renderKB(){
+  if(!PD)return;const cont=document.getElementById('kb-cont');cont.innerHTML='';
+  const s=PD.settings,tWp=(parseFloat(s.dcGuc)||39)*1e6;
+  (PD.kesifBData||DEF_KB).forEach((g,gi)=>{
+    const gt=g.items.reduce((t,it)=>(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0)+t,0);
+    const div=document.createElement('div');div.className='acc acc-kb';
+    div.innerHTML=`<div class="ach"><span class="aarr">▶</span><span class="acode">${g.code}</span><span class="aname acc-grp-title">${g.name}</span><span style="margin-left:auto;text-align:right"><span class="atot" id="kb-gtot-${gi}">${fmtUSD(gt)}</span><span class="awp" style="display:block">${(gt/tWp).toFixed(4)} USD/Wp</span></span></div>
+    <div class="abody"><div style="overflow-x:auto"><table class="dt" style="min-width:800px">
+    <thead><tr><th style="width:60px">Kod</th><th style="min-width:180px">Tanım</th><th style="width:70px">Birim</th><th style="width:85px">Miktar</th><th style="width:48px">Kur</th><th style="min-width:110px">Birim Fiyat</th><th style="width:80px">USD Eşd.</th><th style="width:120px">Toplam</th><th style="min-width:100px">Not</th></tr></thead>
+    <tbody>${g.items.map((it,ii)=>kbRow(it,gi,ii,tWp,s)).join('')}</tbody>
+    </table></div></div>`;
+    div.querySelector('.ach').onclick=()=>div.classList.toggle('open');
+    cont.appendChild(div);attachKB(div,gi,tWp,s);
+  });
+  updKBTots();
+}
+
+function kbRow(it,gi,ii,tWp,s){
+  const cur=it.fiyatCur||'USD',raw=it.rawFiyat!==undefined?it.rawFiyat:parseFloat(it.birimFiyat)||0,usd=parseFloat(it.birimFiyat)||0,rt=(parseFloat(it.miktar)||0)*usd;
+  return `<tr>
+    <td class="tdc">${it.code}</td>
+    <td><input class="ii kb-tan" data-gi="${gi}" data-ii="${ii}" value="${it.tanim}" style="width:220px"></td>
+    <td><input class="ii kb-brm" data-gi="${gi}" data-ii="${ii}" value="${it.birim||''}" style="width:48px"></td>
+    <td><input type="number" class="ii kb-mik" data-gi="${gi}" data-ii="${ii}" value="${it.miktar}" style="width:65px;text-align:right"></td>
+    <td><select class="csel kb-cur" data-gi="${gi}" data-ii="${ii}"><option value="USD" ${cur==='USD'?'selected':''}>USD</option><option value="TL" ${cur==='TL'?'selected':''}>TL</option><option value="EUR" ${cur==='EUR'?'selected':''}>EUR</option></select></td>
+    <td><input type="number" class="ii kb-fiy" data-gi="${gi}" data-ii="${ii}" value="${raw}" step="any" style="width:80px;text-align:right"> <span style="font-size:10px;color:var(--tx3)">${csym(cur)}</span></td>
+    <td style="font-size:10px;color:var(--tx3)">${usd.toFixed(4)} $</td>
+    <td class="tdt" id="kb-r-${gi}-${ii}">${fmtUSD(rt)}<span class="tdwp">${(rt/tWp).toFixed(4)} $/Wp</span></td>
+    <td style="font-size:11px;color:var(--tx3)">${it.notlar||''}</td>
+  </tr>`;
+}
+
+function attachKB(cont,gi,tWp,s){
+  const upd=(gi2,ii2)=>{
+    if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));
+    const it=PD.kesifBData[gi2].items[ii2],t=(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0),el=document.getElementById(`kb-r-${gi2}-${ii2}`);
+    if(el)el.innerHTML=`${fmtUSD(t)}<span class="tdwp">${(t/tWp).toFixed(4)} $/Wp</span>`;
+    const grpT=PD.kesifBData[gi2].items.reduce((s,it)=>(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0)+s,0);
+    const gEl=document.getElementById(`kb-gtot-${gi2}`);
+    if(gEl)gEl.textContent=fmtUSD(grpT);
+    updKBTots(); renderDash();
+  };
+  cont.querySelectorAll('.kb-tan').forEach(i=>i.oninput=e=>{if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));PD.kesifBData[+e.target.dataset.gi].items[+e.target.dataset.ii].tanim=e.target.value;});
+  cont.querySelectorAll('.kb-brm').forEach(i=>i.oninput=e=>{if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));PD.kesifBData[+e.target.dataset.gi].items[+e.target.dataset.ii].birim=e.target.value;});
+  cont.querySelectorAll('.kb-mik').forEach(i=>i.oninput=e=>{if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));PD.kesifBData[+e.target.dataset.gi].items[+e.target.dataset.ii].miktar=parseFloat(e.target.value)||0;upd(+e.target.dataset.gi,+e.target.dataset.ii);});
+  cont.querySelectorAll('.kb-cur').forEach(sel=>sel.onchange=e=>{if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));const it=PD.kesifBData[+e.target.dataset.gi].items[+e.target.dataset.ii];it.fiyatCur=e.target.value;it.rawFiyat=fromUSD(it.birimFiyat,it.fiyatCur,s);renderKB();});
+  cont.querySelectorAll('.kb-fiy').forEach(i=>i.oninput=e=>{if(!PD.kesifBData)PD.kesifBData=JSON.parse(JSON.stringify(DEF_KB));const it=PD.kesifBData[+e.target.dataset.gi].items[+e.target.dataset.ii];it.rawFiyat=parseFloat(e.target.value)||0;it.birimFiyat=toUSD(it.rawFiyat,it.fiyatCur||'USD',s);upd(+e.target.dataset.gi,+e.target.dataset.ii);});
+}
+
+function updKBTots(){
+  if(!PD)return;const f=calc();if(!f)return;
+  const el=document.getElementById('kb-tots');el.style.display='grid';
+  el.innerHTML=`<div class="tgrid">
+    <div><div class="tl">A — Direkt Giderler</div><div class="tv" style="color:var(--pr)">${fmtUSD(f.A)}</div><div class="twp">${(f.A/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">B — Endirekt Giderler</div><div class="tv" style="color:var(--pu)">${fmtUSD(f.B)}</div><div class="twp">${(f.B/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">C — Contingency (%${PD.settings.contingency||1})</div><div class="tv" style="color:var(--am)">${fmtUSD(f.C)}</div><div class="twp">${(f.C/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Genel Maliyet (A+B+C)</div><div class="tv">${fmtUSD(f.tot)}</div><div class="twp">${(f.tot/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Satış Fiyatı</div><div class="tv" style="color:var(--gr)">${fmtUSD(f.sat)}</div><div class="twp">${(f.sat/f.tWp).toFixed(4)} USD/Wp</div></div>
+    <div><div class="tl">Brüt Kâr</div><div class="tv" style="color:var(--pu)">${fmtUSD(f.brK)}</div><div class="twp">${(f.brK/f.tWp).toFixed(4)} USD/Wp</div></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// BOQ
+// ═══════════════════════════════════════════════════
+function renderBoQ(){
+  if(!PD)return;const cont=document.getElementById('boq-cont');cont.innerHTML='';
+  (PD.kesifData||[]).forEach(g=>{const div=document.createElement('div');div.className='acc open';
+    div.innerHTML=`<div class="ach" style="cursor:default;background:var(--bg3)"><span class="acode">${g.code}</span><span class="aname acc-grp-title">${g.name}</span></div>
+    <div class="abody" style="overflow-x:auto"><table class="dt" style="table-layout:fixed;width:100%;min-width:700px"><colgroup><col style="width:60px"><col style="width:220px"><col style="width:130px"><col style="width:120px"><col style="width:50px"><col style="width:80px"></colgroup><thead><tr><th style="text-align:left;padding:6px 8px">Sıra No</th><th style="text-align:left;padding:6px 8px">Ürün Tanımı</th><th style="text-align:left;padding:6px 8px">Ürün Tipi</th><th style="text-align:left;padding:6px 8px">Marka</th><th style="text-align:center;padding:6px 8px">Birim</th><th style="text-align:right;padding:6px 8px">Miktar</th></tr></thead>
+    <tbody>${g.items.map(it=>`<tr><td class="tdc" style="padding:5px 8px">${it.code}</td><td style="font-weight:500;padding:5px 8px;word-break:break-word">${it.tanim}</td><td class="tdb" style="padding:5px 8px;word-break:break-word">${it.tip||''}</td><td class="tdb" style="padding:5px 8px;word-break:break-word">${it.marka||''}</td><td style="text-align:center;padding:5px 8px">${it.birim}</td><td style="text-align:right;font-weight:600;padding:5px 8px">${(parseFloat(it.miktar)||0).toLocaleString('tr-TR')}</td></tr>`).join('')}</tbody></table></div>`;
+    cont.appendChild(div);
+  });
+}
+
+function printBoQ(){
+  if(!PD)return;const s=PD.settings,w=window.open('','_blank');let rows='';
+  (PD.kesifData||[]).forEach(g=>{rows+=`<tr style="background:#1e3a5f"><td colspan="6" style="color:#fbbf24;font-weight:700;padding:6px 8px">${g.code} — ${g.name}</td></tr>`;g.items.forEach(it=>{rows+=`<tr><td>${it.code}</td><td>${it.tanim}</td><td>${it.tip||''}</td><td>${it.marka||''}</td><td>${it.birim}</td><td style="text-align:right;font-weight:600">${(parseFloat(it.miktar)||0).toLocaleString('tr-TR')}</td></tr>`;});});
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BoQ</title><style>body{font-family:Arial,sans-serif;font-size:10px;margin:10mm}h1{font-size:14px;color:#1e3a5f}.sub{font-size:10px;color:#666;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#1e3a5f;color:#fbbf24;padding:5px 7px;font-size:9px}td{padding:4px 7px;border-bottom:1px solid #e5e7eb}tr:nth-child(even){background:#f8fafc}@media print{@page{size:A4;margin:12mm}}</style></head><body>
+  <h1>☀ GES TEKLİF — Bill of Quantities (BoQ)</h1><div class="sub">${s.isveren||''} | ${s.projeAdi||''} | ${s.dcGuc||''} MWp | ${new Date().toLocaleDateString('tr-TR')}</div>
+  <table><thead><tr><th>Kod</th><th>Ürün Tanımı</th><th>Tip</th><th>Marka</th><th>Birim</th><th>Miktar</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></body></html>`);w.document.close();
+  w.onload=()=>{w.focus();w.print();};
+}
+
+// ═══════════════════════════════════════════════════
+// CASH FLOW
+// ═══════════════════════════════════════════════════
+function calcCF(){
+  if(!PD)return{labels:[],inflow:[],outflow:[],net:[],cumulative:[],finance:[],cumFin:0};
+  const tl=PD.timeline;
+  const s=PD.settings;
+  const months=Math.max(1,Math.ceil((parseFloat(s.sure)||180)/30));
+  const krediFaiz=(parseFloat(s.krediFaiz)||0)/100;
+  const mevduat=(parseFloat(s.mevduat)||0)/100;
+
+  // Build group cost map — B.6 EXCLUDED to break circular dependency
+  // (B.6 is the OUTPUT of this calculation, not an input)
+  const grpCost={};
+  (PD.kesifData||[]).forEach(g=>{grpCost[g.code]=getGrpTot(g,s);});
+  (PD.kesifBData||[]).forEach(g=>{
+    grpCost[g.code]=g.items.reduce((t,it)=>{
+      if(it.code==='B.6.1'||it.code==='B.6.2'||it.code==='B.6.3'||it.code==='B.6.4'||it.code==='B.6.5')
+        return t; // exclude B.6 from cost base
+      return t+(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0);
+    },0);
+  });
+
+  // Total cost WITHOUT B.6 for sales price calculation
+  const f=calc();
+  if(!f) return{labels:[],inflow:[],outflow:[],net:[],cumulative:[],finance:[],cumFin:0};
+
+  const inf=Array(months).fill(0);
+  const out=Array(months).fill(0);
+
+  (tl.rows||[]).forEach(r=>{
+    for(let m=0;m<months;m++){
+      const v=parseFloat(r.values?.[m]||0);
+      if(r.type==='inflow'){
+        inf[m]+=v*f.sat;
+      } else {
+        // Compute rowCost from group code in name (e.g. "A.1 Panel" → grpCost["A.1"])
+        let rowCost=r.rowCost;
+        if(rowCost===undefined){
+          const match=r.name.match(/^([AB]\.[0-9]+)/);
+          rowCost=match?( grpCost[match[1]]||0 ):0;
+        }
+        out[m]+=(v/100)*rowCost;
+      }
+    }
+  });
+
+  // Monthly finance: credit cost or deposit income based on running balance
+  const finance=Array(months).fill(0);
+  const net=[],cum=[];
+  let running=0;
+  inf.forEach((v,i)=>{
+    const n=v-out[i];
+    net.push(n);
+    running+=n;
+    // Apply finance AFTER this month's net is added to running balance
+    if(running<0) finance[i]=running*krediFaiz;   // negative value = cost
+    else          finance[i]=running*mevduat;      // positive value = income
+    cum.push(running);
+  });
+
+  // cumFin = last value of running cumulative finance (sum of all monthly finance)
+  const cumFin=finance.reduce((a,b)=>a+b,0);
+
+  return{labels:Array.from({length:months},(_,i)=>`Ay ${i+1}`),inflow:inf,outflow:out,net,cumulative:cum,finance,cumFin};
+}
+
+// Pre-calculate row costs based on each row's kalem group
+function calcRowCosts(){
+  if(!PD||!PD.timeline) return;
+  const f=calc();
+  if(!f) return;
+  const s=PD.settings;
+  // Build group cost map
+  const grpCost={};
+  (PD.kesifData||[]).forEach(g=>{grpCost[g.code]=getGrpTot(g,s);});
+  (PD.kesifBData||[]).forEach(g=>{
+    const gt=g.items.reduce((t,it)=>(parseFloat(it.miktar)||0)*(parseFloat(it.birimFiyat)||0)+t,0);
+    grpCost[g.code]=gt;
+  });
+
+  (PD.timeline.rows||[]).forEach(r=>{
+    if(r.type==='outflow'){
+      // Match by name prefix A.1, A.2 ... B.1, B.2...
+      const match=r.name.match(/^([AB]\.[0-9]+)/);
+      if(match){
+        const code=match[1];
+        r.rowCost=grpCost[code]||0;
+      } else {
+        r.rowCost=f.tot; // fallback
+      }
+    }
+  });
+}
+
+function renderCFCharts(){
+  if(!PD)return;
+  calcRowCosts(); // ensure row costs are fresh
+  const{labels,inflow,outflow,net,cumulative,finance,cumFin}=calcCF();
+  // B.6.1 → kümülatif finans son değeri = cumFin
+  const b6val2=parseFloat((-cumFin).toFixed(2));
+  (PD.kesifBData||[]).forEach(g=>g.items.forEach(it=>{
+    if(it.code==='B.6.1'){
+      it.birimFiyat=b6val2; it.rawFiyat=b6val2;
+      it.notlar=cumFin<0
+        ?'Proje finans yükü (kredi maliyeti): '+fmtUSD(Math.abs(cumFin))
+        :'Proje finans geliri (mevduat): '+fmtUSD(cumFin);
+    }
+  }));  const mxD=Math.min(...cumulative),bep=cumulative.findIndex(v=>v>0),tI=inflow.reduce((a,b)=>a+b,0),tO=outflow.reduce((a,b)=>a+b,0);
+  document.getElementById('cf-stat').innerHTML=`<div class="cs"><div class="csl">Toplam Gelir</div><div class="csv pos">${fmtUSD(tI)}</div></div><div class="cs"><div class="csl">Toplam Gider</div><div class="csv neg">${fmtUSD(tO)}</div></div><div class="cs"><div class="csl">Max Finans Yükü</div><div class="csv ${mxD<0?'neg':'pos'}">${fmtUSD(Math.abs(mxD))}</div></div><div class="cs"><div class="csl">Artıya Geçiş</div><div class="csv ${bep>=0?'pos':'neg'}">${bep>=0?`Ay ${bep+1}`:'—'}</div></div>`;
+  const c1=document.getElementById('cf-bar')?.getContext('2d');if(c1){if(cfBarCh)cfBarCh.destroy();cfBarCh=new Chart(c1,{type:'bar',data:{labels,datasets:[{label:'Gelir',data:inflow,backgroundColor:'rgba(16,185,129,.7)',borderColor:'#10b981',borderWidth:1,borderRadius:4},{label:'Gider',data:outflow.map(v=>-v),backgroundColor:'rgba(239,68,68,.7)',borderColor:'#ef4444',borderWidth:1,borderRadius:4}]},options:chOpts('Aylık Gelir / Gider')});}
+  const c2=document.getElementById('cf-cum')?.getContext('2d');if(c2){if(cfCumCh)cfCumCh.destroy();
+    cfCumCh=new Chart(c2,{type:'line',data:{labels,datasets:[
+      {label:'Tüm Kümülatif',data:cumulative,borderColor:'#64748b',borderWidth:1.5,tension:0.3,pointRadius:3,borderDash:[4,3],fill:false},
+      {label:'Pozitif Bölge',data:cumulative.map(v=>v>=0?v:null),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.12)',fill:{value:0},tension:0.3,spanGaps:false,pointRadius:5,borderWidth:2.5},
+      {label:'Negatif Bölge',data:cumulative.map(v=>v<0?v:null),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.12)',fill:{value:0},tension:0.3,spanGaps:false,pointRadius:5,borderWidth:2.5},
+      {label:'Finans Maliyeti',data:finance,borderColor:'#f59e0b',borderDash:[3,3],tension:0.3,pointRadius:3,borderWidth:1.5}
+    ]},options:chOpts('Kümülatif Net Cash Flow & Finans Maliyeti')});}
+  const cumFinArr=[];let cf=0;finance.forEach(fv=>{cf+=fv;cumFinArr.push(cf);});
+  document.getElementById('cf-tbl').innerHTML=`<div style="overflow-x:auto"><table class="dt"><thead><tr><th>Ay</th><th>Gelir</th><th>Gider</th><th>Net</th><th>Kümülatif</th><th title="Negatif bakiye → kredi faizi, Pozitif → mevduat geliri">Aylık Finans</th><th>Kümülatif Finans</th></tr></thead><tbody>${labels.map((l,i)=>`<tr><td>${l}</td><td class="pos">${fmtUSD(inflow[i])}</td><td class="neg">${fmtUSD(outflow[i])}</td><td class="${net[i]>=0?'pos':'neg'}">${fmtUSD(net[i])}</td><td class="${cumulative[i]>=0?'pos':'neg'}">${fmtUSD(cumulative[i])}</td><td class="${finance[i]>=0?'pos':'neg'}">${fmtUSD(finance[i])}</td><td class="${cumFinArr[i]>=0?'pos':'neg'}">${fmtUSD(cumFinArr[i])}</td></tr>`).join('')}<tr style="background:var(--bg);font-weight:700;border-top:2px solid var(--bd)">
+    <td>Toplam</td>
+    <td class="pos">${fmtUSD(inflow.reduce((a,b)=>a+b,0))}</td>
+    <td class="neg">${fmtUSD(outflow.reduce((a,b)=>a+b,0))}</td>
+    <td class="${inflow.reduce((a,b)=>a+b,0)-outflow.reduce((a,b)=>a+b,0)>=0?'pos':'neg'}">${fmtUSD(inflow.reduce((a,b)=>a+b,0)-outflow.reduce((a,b)=>a+b,0))}</td>
+    <td></td>
+    <td class="${finance.reduce((a,b)=>a+b,0)>=0?'pos':'neg'}">${fmtUSD(finance.reduce((a,b)=>a+b,0))}</td>
+    <td class="${cumFin>=0?'pos':'neg'}">${fmtUSD(cumFin)}</td>
+  </tr></tbody></table></div>`;
+}
+
+function chOpts(t){return{responsive:true,plugins:{legend:{labels:{color:'#475569',font:{size:11}}},title:{display:!!t,text:t,color:'#0f172a',font:{size:13,family:'Plus Jakarta Sans',weight:'700'}}},scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},y:{ticks:{color:'#94a3b8',font:{size:10},callback:v=>fmtUSDs(v)},grid:{color:'rgba(0,0,0,.05)'}}}};}
+
+// ═══════════════════════════════════════════════════
+// TIMELINE
+// ═══════════════════════════════════════════════════
+// ── Auto-scale timeline to project duration ──
+// Rules:
+//  - Each row's original span (first→last non-zero month) is preserved proportionally
+//  - All payments are compressed into actual project months
+//  - Outflow totals always sum to exactly 100 after scaling
+//  - Inflow totals always sum to exactly 1.0 after scaling
+function autoScaleTL(){
+  if(!PD||!PD.timeline) return;
+  const months=Math.max(1,Math.ceil((parseFloat(PD.settings.sure)||180)/30));
+  const REF=12; // reference month count for default values
+
+  (PD.timeline.rows||[]).forEach(function(r){
+    const v=r.values||[];
+    const isInflow=r.type==='inflow';
+
+    // Find original non-zero span
+    let first=-1,last=-1;
+    for(let i=0;i<v.length;i++){if(parseFloat(v[i]||0)>0){if(first<0)first=i;last=i;}}
+    if(first<0){
+      // All zeros — distribute equally if months <= 6, else keep zeros
+      if(months<=6){
+        var eq=parseFloat((100/months).toFixed(2));
+        r.values=Array(months).fill(0).map((_,i)=>i<months-1?eq:parseFloat((100-eq*(months-1)).toFixed(2)));
+        if(isInflow){var eqi=parseFloat((1/months).toFixed(4));r.values=Array(months).fill(0).map((_,i)=>i<months-1?eqi:parseFloat((1-eqi*(months-1)).toFixed(4)));}
+      } else {
+        r.values=Array(months).fill(0);
+      }
+      return;
+    }
+
+    // Scale span proportionally to actual months
+    // Original span: first..last out of REF months
+    var spanStart=Math.round((first/REF)*months);
+    var spanEnd=Math.max(spanStart,Math.round(((last+1)/REF)*months)-1);
+    // Clamp to actual months
+    spanStart=Math.max(0,Math.min(months-1,spanStart));
+    spanEnd=Math.max(spanStart,Math.min(months-1,spanEnd));
+    var spanLen=spanEnd-spanStart+1;
+
+    // Get original non-zero values in span order
+    var origVals=[];
+    for(var i=first;i<=last;i++){var pv=parseFloat(v[i]||0);if(pv>0)origVals.push(pv);}
+    var origTotal=origVals.reduce(function(a,b){return a+b;},0);
+
+    // Build new values array
+    var newVals=Array(months).fill(0);
+
+    if(spanLen<=0){spanLen=1;spanEnd=spanStart;}
+
+    if(origVals.length<=spanLen){
+      // Distribute original values by interpolation across span
+      for(var j=0;j<spanLen;j++){
+        var srcIdx=Math.round((j/(Math.max(1,spanLen-1)))*(origVals.length-1));
+        newVals[spanStart+j]=(origVals[Math.min(srcIdx,origVals.length-1)]||0);
+      }
+    } else {
+      // More original values than span slots → compress: equal distribution in span
+      var share=parseFloat((origTotal/spanLen).toFixed(4));
+      for(var j=0;j<spanLen;j++) newVals[spanStart+j]=share;
+    }
+
+    // Normalize to exact total
+    var target=isInflow?origTotal:100;
+    var newTotal=newVals.reduce(function(a,b){return a+b;},0);
+    if(newTotal>0&&Math.abs(newTotal-target)>0.01){
+      var factor=target/newTotal;
+      newVals=newVals.map(function(x){return parseFloat((x*factor).toFixed(4));});
+    }
+    // Fix rounding on last non-zero slot
+    var newSum=newVals.reduce(function(a,b){return a+b;},0);
+    if(Math.abs(newSum-target)>0.001){
+      var lastNZ=-1;
+      for(var i=newVals.length-1;i>=0;i--){if(newVals[i]>0){lastNZ=i;break;}}
+      if(lastNZ>=0) newVals[lastNZ]=parseFloat((newVals[lastNZ]+(target-newSum)).toFixed(4));
+    }
+    r.values=newVals;
+  });
+  PD.timeline.months=months;
+}
+
+function renderTL(){
+  if(!PD)return;
+  autoScaleTL();   // rescale to project duration before rendering
+  calcRowCosts();
+  const tl=PD.timeline;
+  const months=Math.max(1,Math.ceil((parseFloat(PD.settings.sure)||180)/30));
+  const cont=document.getElementById('tl-cont');
+  const f=calc();
+  const mL=Array.from({length:months},(_,i)=>`Ay ${i+1}`);
+  let h=`<div class="tlw"><table class="tlt">
+  <thead><tr>
+    <th style="min-width:170px">Kalem</th>
+    <th style="width:50px">Tür</th>
+    <th style="width:100px;text-align:right">Kalem Maliyeti</th>
+    ${mL.map(l=>`<th style="width:58px">${l}</th>`).join('')}
+    <th style="width:55px">Toplam %</th>
+  </tr></thead><tbody>`;
+  (tl.rows||[]).forEach((r,ri)=>{
+    const isOut=r.type==='outflow';
+    const tot=(r.values||[]).reduce((s,v)=>s+parseFloat(v||0),0);
+    const totOk=!isOut||(Math.abs(tot-100)<0.01);
+    const badge=isOut?'<span class="tlb tout">↓ Gider</span>':'<span class="tlb tin">↑ Gelir</span>';
+    const rowCostStr=isOut&&r.rowCost!==undefined?fmtUSDs(r.rowCost):'(Satış fiyatı)';
+    const totColor=isOut?(totOk?'var(--gr)':'var(--re)'):'var(--gr)';
+    h+=`<tr>
+      <td><input type="text" value="${r.name}" class="dinp tln" data-ri="${ri}" style="width:160px;font-weight:600"></td>
+      <td>${badge}</td>
+      <td style="text-align:right;font-size:11px;color:var(--tx3)">${rowCostStr}</td>
+      ${Array.from({length:months},(_,m)=>`<td><input type="number" class="tlinp tlv" data-ri="${ri}" data-m="${m}" value="${r.values?.[m]||''}" step="${isOut?1:0.01}" min="0" max="${isOut?100:1}" style="width:50px"></td>`).join('')}
+      <td class="tlr-${ri}" style="font-weight:700;color:${totColor};text-align:center">${isOut?tot.toFixed(0)+'%':tot.toFixed(2)}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>
+  <div style="margin-top:10px;display:flex;gap:7px">
+    <button class="btn btn-g btn-sm" id="tl-add-in">＋ Gelir Satırı</button>
+    <button class="btn btn-g btn-sm" id="tl-add-out">＋ Gider Satırı</button>
+    <button class="btn btn-g btn-sm" id="tl-del" style="color:var(--re)">− Son Sil</button>
+  </div>`;
+  cont.innerHTML=h;
+  cont.querySelectorAll('.tln').forEach(inp=>inp.onchange=e=>{tl.rows[+e.target.dataset.ri].name=e.target.value;calcRowCosts();});
+  cont.querySelectorAll('.tlv').forEach(inp=>inp.oninput=e=>{
+    const ri=+e.target.dataset.ri,m=+e.target.dataset.m;
+    if(!tl.rows[ri].values)tl.rows[ri].values=Array(months).fill(0);
+    tl.rows[ri].values[m]=parseFloat(e.target.value)||0;
+    const isOut=tl.rows[ri].type==='outflow';
+    const tot=tl.rows[ri].values.reduce((s,v)=>s+parseFloat(v||0),0);
+    const el=cont.querySelector('.tlr-'+ri);
+    if(el){
+      const ok=!isOut||(Math.abs(tot-100)<0.01);
+      el.textContent=isOut?tot.toFixed(0)+'%':tot.toFixed(2);
+      el.style.color=ok?'var(--gr)':'var(--re)';
+    }
+  });
+  document.getElementById('tl-add-in')?.addEventListener('click',()=>{tl.rows.push({name:'Yeni Gelir',type:'inflow',values:Array(months).fill(0)});renderTL();});
+  document.getElementById('tl-add-out')?.addEventListener('click',()=>{tl.rows.push({name:'Yeni Gider',type:'outflow',values:Array(months).fill(0),rowCost:0});renderTL();});
+  document.getElementById('tl-del')?.addEventListener('click',()=>{if(tl.rows.length>1){tl.rows.pop();renderTL();}});
+}
+
+const ROPTS=['Yüklenici','İşveren','Paylaşımlı','—'];
+const dCls=v=>v==='Yüklenici'?'yuk':v==='İşveren'?'isv':v==='Paylaşımlı'?'pay':'yok';
+
+function renderDor(){
+  if(!PD)return;const cont=document.getElementById('dor-cont');cont.innerHTML='';
+  (PD.dor||[]).forEach((sc,si)=>{
+    const div=document.createElement('div');div.className='acc';
+    div.innerHTML=`<div class="ach">
+      <span class="aarr">▶</span>
+      <input class="ii ds-name" value="${sc.name}" style="flex:1;font-weight:700;font-size:13px" data-si="${si}">
+      <button class="btn btn-g btn-sm da-item" data-si="${si}" style="margin-left:auto;flex-shrink:0">＋ Madde</button>
+      <button class="btn btn-d dd-scope" data-si="${si}" style="margin-left:5px;flex-shrink:0">✕</button>
+    </div>
+    <div class="abody"><div style="overflow-x:auto"><table class="dt">
+      <thead><tr><th style="min-width:200px">Kapsam / Faaliyet</th><th style="width:72px;text-align:center;font-size:9px;padding:5px 2px">Tedarik</th><th style="width:72px;text-align:center;font-size:9px;padding:5px 2px">Montaj</th><th style="width:72px;text-align:center;font-size:9px;padding:5px 2px">Devreye Alma</th><th>Notlar</th><th style="width:26px"></th></tr></thead>
+      <tbody>${sc.items.map((it,ii)=>`<tr>
+        <td><input class="dinp dd" data-si="${si}" data-ii="${ii}" value="${it.description||''}" placeholder="Açıklama..." style="width:100%;font-size:13px;font-weight:500;color:var(--tx)"></td>
+        <td style="text-align:center"><select class="dsel ${dCls(it.tedarik)} dt2" data-si="${si}" data-ii="${ii}">${ROPTS.map(o=>`<option ${o===it.tedarik?'selected':''}>${o}</option>`).join('')}</select></td>
+        <td style="text-align:center"><select class="dsel ${dCls(it.montaj)} dm" data-si="${si}" data-ii="${ii}">${ROPTS.map(o=>`<option ${o===it.montaj?'selected':''}>${o}</option>`).join('')}</select></td>
+        <td style="text-align:center"><select class="dsel ${dCls(it.devreAma)} da" data-si="${si}" data-ii="${ii}">${ROPTS.map(o=>`<option ${o===it.devreAma?'selected':''}>${o}</option>`).join('')}</select></td>
+        <td><input class="dinp dn" data-si="${si}" data-ii="${ii}" value="${it.notes||''}" placeholder="Not..." style="width:100%"></td>
+        <td><button class="btn btn-d dd-item" data-si="${si}" data-ii="${ii}">✕</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+    div.querySelector('.ach').onclick=e=>{if(e.target.closest('input')||e.target.closest('button')||e.target.closest('select'))return;div.classList.toggle('open');};
+    div.querySelector('.ds-name').onchange=e=>{PD.dor[+e.target.dataset.si].name=e.target.value;};
+    div.querySelectorAll('.dd').forEach(i=>i.onchange=e=>{PD.dor[+e.target.dataset.si].items[+e.target.dataset.ii].description=e.target.value;});
+    div.querySelectorAll('.dn').forEach(i=>i.onchange=e=>{PD.dor[+e.target.dataset.si].items[+e.target.dataset.ii].notes=e.target.value;});
+    div.querySelectorAll('.dt2').forEach(s=>s.onchange=e=>{PD.dor[+e.target.dataset.si].items[+e.target.dataset.ii].tedarik=e.target.value;e.target.className=`dsel ${dCls(e.target.value)} dt2`;});
+    div.querySelectorAll('.dm').forEach(s=>s.onchange=e=>{PD.dor[+e.target.dataset.si].items[+e.target.dataset.ii].montaj=e.target.value;e.target.className=`dsel ${dCls(e.target.value)} dm`;});
+    div.querySelectorAll('.da').forEach(s=>s.onchange=e=>{PD.dor[+e.target.dataset.si].items[+e.target.dataset.ii].devreAma=e.target.value;e.target.className=`dsel ${dCls(e.target.value)} da`;});
+    div.querySelector('.da-item').onclick=e=>{PD.dor[+e.target.dataset.si].items.push({description:'',tedarik:'Yüklenici',montaj:'Yüklenici',devreAma:'Yüklenici',notes:''});renderDor();};
+    div.querySelector('.dd-scope').onclick=e=>{PD.dor.splice(+e.target.dataset.si,1);renderDor();};
+    div.querySelectorAll('.dd-item').forEach(b=>b.onclick=e=>{PD.dor[+e.target.dataset.si].items.splice(+e.target.dataset.ii,1);renderDor();});
+    cont.appendChild(div);
+  });
+}
+
+function printDoR(){
+  if(!PD)return;const s=PD.settings,w=window.open('','_blank');let rows='';
+  const cl={Yüklenici:'#10b981',İşveren:'#3b82f6',Paylaşımlı:'#f59e0b','—':'#94a3b8'};
+  (PD.dor||[]).forEach(sc=>{rows+=`<tr style="background:#1e3a5f"><td colspan="5" style="color:#fbbf24;font-weight:700;padding:7px 10px">${sc.name}</td></tr>`;sc.items.forEach(it=>{rows+=`<tr><td>${it.description||''}</td><td style="text-align:center;color:${cl[it.tedarik]||'#94a3b8'};font-weight:600">${it.tedarik||'—'}</td><td style="text-align:center;color:${cl[it.montaj]||'#94a3b8'};font-weight:600">${it.montaj||'—'}</td><td style="text-align:center;color:${cl[it.devreAma]||'#94a3b8'};font-weight:600">${it.devreAma||'—'}</td><td style="color:#666">${it.notes||''}</td></tr>`;});});
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DoR</title><style>body{font-family:Arial,sans-serif;font-size:10px;margin:10mm}h1{font-size:14px;color:#1e3a5f}.sub{font-size:10px;color:#666;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#1e3a5f;color:#fbbf24;padding:6px 8px;font-size:10px}td{padding:5px 8px;border-bottom:1px solid #e5e7eb}tr:nth-child(even){background:#f8fafc}@media print{@page{size:A4;margin:10mm}}</style></head><body>
+  <h1>☀ GES TEKLİF — DoR: Sorumluluk Matrisi</h1><div class="sub">${s.isveren||''} | ${s.projeAdi||''} | ${new Date().toLocaleDateString('tr-TR')}</div>
+  <table><thead><tr><th>Kapsam / Faaliyet</th><th style="text-align:center">Tedarik</th><th style="text-align:center">Montaj</th><th style="text-align:center">Devreye Alma</th><th>Notlar</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></body></html>`);w.document.close();
+  w.onload=()=>{w.focus();w.print();};
+}
+
+// ═══════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════
+function renderSet(){
+  if(!PD)return;const s=PD.settings;
+  const fm={isveren:'s-isv',projeAdi:'s-prj',il:'s-il',ilce:'s-ilc',dcGuc:'s-dc',acGuc:'s-ac',panelGuc:'s-pg',panelAdet:'s-pa',invGuc:'s-ig',invAdet:'s-ia',baslangic:'s-bas',sure:'s-sur',usd:'s-usd',eur:'s-eur',trafoSayisi:'s-ts',cevreTelcit:'s-cv',projeAlani:'s-al'};
+  Object.entries(fm).forEach(([f,id])=>{const el=document.getElementById(id);if(el)el.value=s[f]??'';});
+  renderAlts('p',s.panelAlts,'alt-p');renderAlts('k',s.konstrAlts,'alt-k');renderAlts('i',s.invAlts,'alt-i');
+  renderNE('nc',s.notes||[],'notes');renderNE('rc',s.risks||[],'risks');
+}
+
+function renderAlts(type,alts,cid){
+  const c=document.getElementById(cid);if(!c)return;c.innerHTML='';
+  const km={p:'panelAlts',k:'konstrAlts',i:'invAlts'};
+  (alts||[]).forEach((a,i)=>{const d=document.createElement('div');d.className='ai';
+    d.innerHTML=`<input type="text" value="${a.name}" placeholder="Marka" data-t="${type}" data-i="${i}"><input type="number" value="${a.price}" step="any" data-t="${type}" data-i="${i}"><button class="adel" data-t="${type}" data-i="${i}">✕</button>`;
+    d.querySelector('input[type=text]').oninput=e=>{PD.settings[km[e.target.dataset.t]][+e.target.dataset.i].name=e.target.value;};
+    d.querySelector('input[type=number]').oninput=e=>{PD.settings[km[e.target.dataset.t]][+e.target.dataset.i].price=parseFloat(e.target.value)||0;};
+    d.querySelector('.adel').onclick=e=>{PD.settings[km[e.target.dataset.t]].splice(+e.target.dataset.i,1);renderAlts(e.target.dataset.t,PD.settings[km[e.target.dataset.t]],cid);};
+    c.appendChild(d);
+  });
+}
+window.addAlt=t=>{const km={p:'panelAlts',k:'konstrAlts',i:'invAlts'},cm={p:'alt-p',k:'alt-k',i:'alt-i'};if(!PD.settings[km[t]])PD.settings[km[t]]=[];PD.settings[km[t]].push({name:'',price:0});renderAlts(t,PD.settings[km[t]],cm[t]);};
+
+function renderNE(cid,items,field){
+  const c=document.getElementById(cid);if(!c)return;c.innerHTML='';
+  items.forEach((n,i)=>{const d=document.createElement('div');d.className='nei';
+    d.innerHTML=`<span class="nen">${i+1}.</span><textarea class="ne-ta" data-i="${i}" data-f="${field}" rows="2">${n}</textarea><button class="nedel" data-i="${i}" data-f="${field}">✕</button>`;
+    d.querySelector('.ne-ta').oninput=e=>{PD.settings[e.target.dataset.f][+e.target.dataset.i]=e.target.value;};
+    d.querySelector('.nedel').onclick=e=>{PD.settings[e.target.dataset.f].splice(+e.target.dataset.i,1);renderNE(cid,PD.settings[e.target.dataset.f],field);};
+    c.appendChild(d);
+  });
+}
+
+function collectSet(){
+  if(!PD)return;const s=PD.settings,g=id=>document.getElementById(id),n=id=>parseFloat(g(id)?.value)||0;
+  s.isveren=g('s-isv')?.value||'';s.projeAdi=g('s-prj')?.value||'';s.il=g('s-il')?.value||'';s.ilce=g('s-ilc')?.value||'';
+  s.dcGuc=n('s-dc');s.acGuc=n('s-ac');s.panelGuc=n('s-pg');s.panelAdet=n('s-pa');s.invGuc=n('s-ig');s.invAdet=n('s-ia');
+  s.baslangic=g('s-bas')?.value||'';s.sure=n('s-sur');s.usd=n('s-usd')||43.51;s.eur=n('s-eur')||51.52;
+  s.trafoSayisi=n('s-ts')||1;s.cevreTelcit=n('s-cv')||400;s.projeAlani=n('s-al')||10000;
+  // Kar ve mevduat oranları dashboard parametrelerinden okunur
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+const fmtUSD=v=>isNaN(v)||v===null?'—':new Intl.NumberFormat('tr-TR',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v);
+const fmtTL=v=>isNaN(v)?'—':new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(v);
+const fmtUSDs=v=>Math.abs(v)>=1e6?`$${(v/1e6).toFixed(1)}M`:Math.abs(v)>=1e3?`$${(v/1e3).toFixed(0)}K`:`$${(v||0).toFixed(0)}`;
+function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast ${type} show`;setTimeout(()=>el.classList.remove('show'),3000);}
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+window.onerror=function(msg,src,line,col,err){
+  document.getElementById('toast').textContent='JS Hata: '+msg;
+  document.getElementById('toast').className='toast error show';
+  setTimeout(()=>document.getElementById('toast').classList.remove('show'),8000);
+  console.error('Global error:',msg,'at',src,line,col,err);
+  return false;
+};
+initFB();
+</script>
+</body>
+</html>
